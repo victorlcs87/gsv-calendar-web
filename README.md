@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GSV Calendar Web
 
-## Getting Started
+Versão Web do aplicativo de gerenciamento de escalas para bombeiros. Desenvolvido com **Next.js 15**, **Supabase** e **TailwindCSS 4**.
 
-First, run the development server:
+Este projeto visa oferecer uma experiência desktop e mobile responsiva para gestão de serviços voluntários, com funcionalidades de importação, relatórios financeiros e backup em nuvem.
 
+## 🚀 Funcionalidades
+
+- **Autenticação Segura**: Login e Cadastro via Email/Senha (Supabase Auth).
+- **Gestão de Escalas**:
+  - ✨ **Dashboard**: Visão geral com totais e lista filtrável.
+  - 📝 **CRUD Completo**: Adicionar, editar e excluir serviços.
+  - 📥 **Importação CSV**: Leitura automática de arquivos do Sigmanet.
+  - 📤 **Exportação CSV**: Download compatível com Outlook/Google Calendar.
+- **Financeiro**: Cálculo automático de valores Bruto e Líquido.
+- **Interface Moderna**:
+  - 🌓 Dark Mode nativo.
+  - 📱 Layout 100% responsivo.
+  - ⚡ Atalhos rápidos para preenchimento de horas (24h/12h).
+
+## 🛠️ Stack Tecnológica
+
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Linguagem**: TypeScript
+- **Estilização**: TailwindCSS v4 + [shadcn/ui](https://ui.shadcn.com/)
+- **Backend/Banco**: Supabase (PostgreSQL + RLS)
+- **Ícones**: Lucide React
+- **Datas**: date-fns (com parser local para evitar issues de timezone)
+
+## 🏃‍♂️ Como Rodar o Projeto
+
+### Pré-requisitos
+- Node.js 20+ (LTS)
+- npm ou yarn
+- Conta no [Supabase](https://supabase.com/) (para backend)
+
+### Configuração do Ambiente
+
+1. Clone o repositório:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/victorlcs87/gsv-calendar-web.git
+cd gsv-calendar-web
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Instale as dependências:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Configure as variáveis de ambiente:
+Crie um arquivo `.env.local` na raiz com suas chaves do Supabase:
+```env
+NEXT_PUBLIC_SUPABASE_URL=sua_url_aqui
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_key_aqui
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Inicie o servidor de desenvolvimento:
+```bash
+npm run dev
+```
+Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
-## Learn More
+## 📂 Estrutura de Pastas
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app`: Rotas e páginas (App Router).
+  - `(auth)`: Rotas públicas (Login/Register).
+  - `(dashboard)`: Rotas protegidas (Home, Relatórios, Perfil).
+- `src/components`: Componentes reutilizáveis (UI) e de negócio (Scales).
+- `src/lib`: Utilitários (Formatadores, Parsers CSV, Exportação).
+- `src/hooks`: Hooks customizados (Gestão de estado com Supabase).
+- `src/types`: Definições globais de TypeScript.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📚 Documentação do Projeto
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [MIGRATION.md](./MIGRATION.md): Status da migração do app Mobile para Web.
 
-## Deploy on Vercel
+## 🤝 Contribuição
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Projeto interno para gestão de escalas. Pull Requests são bem-vindos para correções de bugs e melhorias de performance.
