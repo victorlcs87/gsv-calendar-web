@@ -1,0 +1,5 @@
+__typename,datIniVagas,datFimVagas,nomTurno,nomGrupoServico,nomLocalServico,nomStatusVaga
+RetSoubombeiroGetGsvMarcacoesRealizadasServidor,06/02/2026,06/02/2026,07h00 às 19h00,SOCORRISTAS (CSU/APH),HRT,Selecionada
+RetSoubombeiroGetGsvMarcacoesRealizadasServidor,02/02/2026,02/02/2026,07h00 às 19h00,GUARNIÇÃO DE UR - SOCORRISTA,GPRAM - Asa Norte,Selecionada
+RetSoubombeiroGetGsvMarcacoesRealizadasServidor,26/01/2026,26/01/2026,07h00 às 19h00,Responsável Técnico - Guarnição da UR,CETOP,Selecionada
+RetSoubombeiroGetGsvMarcacoesRealizadasServidor,25/01/2026,25/01/2026,12h00 às 20h00,OPERAÇÃO CAMINHADA PELA LIBERDADE E JUSTIÇA - SOCORRISTA,45º GBM - SUDOESTE,Alterada

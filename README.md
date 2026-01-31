@@ -74,6 +74,7 @@ Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
 - [MIGRATION.md](./MIGRATION.md): Status da migração do app Mobile para Web.
 
+
 ## 🤝 Contribuição
 
 Projeto interno para gestão de escalas. Pull Requests são bem-vindos para correções de bugs e melhorias de performance.

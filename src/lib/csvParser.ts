@@ -2,17 +2,18 @@ import Papa from 'papaparse'
 import type { ScaleInput, TipoEscala } from '@/types'
 
 /**
- * Colunas esperadas no CSV
- * Formato: Data, Tipo, Local, HoraInicio, HoraFim, Observacoes
+ * Colunas esperadas no CSV (Suporta formato manual e exportação Sigmanet)
  */
 interface CsvRow {
+    // Formato Manual
     Data?: string
     Tipo?: string
     Local?: string
     HoraInicio?: string
     HoraFim?: string
     Observacoes?: string
-    // Alternativas com acentos ou minúsculas
+
+    // Alternativas manuais (minúsculas/acentos)
     data?: string
     tipo?: string
     local?: string
@@ -21,6 +22,13 @@ interface CsvRow {
     hora_inicio?: string
     hora_fim?: string
     observacoes?: string
+
+    // Formato Sigmanet
+    datIniVagas?: string // "06/02/2026"
+    nomTurno?: string    // "07h00 às 19h00"
+    nomLocalServico?: string // "HRT"
+    nomGrupoServico?: string // "SOCORRISTAS..."
+    nomStatusVaga?: string   // "Selecionada"
 }
 
 /**
@@ -34,23 +42,54 @@ export interface CsvParseResult {
 }
 
 /**
- * Valida e normaliza o tipo de escala
+ * Extrai horas de início e fim de uma string de turno
+ * Ex: "07h00 às 19h00" -> { inicio: 7, fim: 19 }
  */
-function normalizeTipo(value: string): TipoEscala | null {
-    const normalized = value.trim().toLowerCase()
-    if (normalized === 'ordinária' || normalized === 'ordinaria' || normalized === 'ord') {
-        return 'Ordinária'
+function parseTurno(turno: string): { inicio: number, fim: number } | null {
+    if (!turno) return null
+
+    // Tenta formato "07h00 às 19h00" ou "07:00 - 19:00"
+    // Regex captura dois grupos de dígitos iniciais
+    const match = turno.match(/(\d{1,2})[h:]\d{2}\s*(?:às|-|to)\s*(\d{1,2})[h:]\d{2}/i)
+
+    if (match) {
+        const inicio = parseInt(match[1])
+        const fim = parseInt(match[2])
+        if (!isNaN(inicio) && !isNaN(fim)) {
+            return { inicio, fim }
+        }
     }
-    if (normalized === 'extra' || normalized === 'ext') {
+
+    return null
+}
+
+/**
+ * Valida e normaliza o tipo de escala ou infere baseado nas horas
+ */
+function determineTipo(tipoStr: string | undefined, horas: { inicio: number, fim: number } | null): TipoEscala {
+    // Se veio explícito, respeita
+    if (tipoStr) {
+        const normalized = tipoStr.trim().toLowerCase()
+        if (normalized === 'ordinária' || normalized === 'ordinaria' || normalized === 'ord') return 'Ordinária'
+        if (normalized === 'extra' || normalized === 'ext') return 'Extra'
+    }
+
+    // Se não veio, infere pelas horas (Heurística)
+    if (horas) {
+        // Se começa e termina na mesma hora (ex: 08h às 08h do dia seguinte) = 24h = Ordinária
+        if (horas.inicio === horas.fim) return 'Ordinária'
+        // Caso contrário (ex: 07h às 19h) = 12h = Extra
         return 'Extra'
     }
-    return null
+
+    return 'Extra' // Default fallback
 }
 
 /**
  * Valida e normaliza a data (aceita DD/MM/YYYY ou YYYY-MM-DD)
  */
 function normalizeData(value: string): string | null {
+    if (!value) return null
     const trimmed = value.trim()
 
     // Formato YYYY-MM-DD
@@ -71,8 +110,8 @@ function normalizeData(value: string): string | null {
 /**
  * Valida e normaliza a hora (0-23)
  */
-function normalizeHora(value: string): number | null {
-    const num = parseInt(value.trim())
+function normalizeHora(value: string | number): number | null {
+    const num = typeof value === 'string' ? parseInt(value.trim()) : value
     if (isNaN(num) || num < 0 || num > 23) {
         return null
     }
@@ -96,55 +135,69 @@ export function parseCsvFile(file: File): Promise<CsvParseResult> {
                 results.data.forEach((row, index) => {
                     const rowNum = index + 2 // +1 para 1-indexed, +1 para header
 
-                    // Extrair valores com fallbacks para diferentes nomes de coluna
-                    const dataValue = row.Data || row.data || ''
-                    const tipoValue = row.Tipo || row.tipo || ''
-                    const localValue = row.Local || row.local || ''
-                    const horaInicioValue = row.HoraInicio || row.horaInicio || row.hora_inicio || ''
-                    const horaFimValue = row.HoraFim || row.horaFim || row.hora_fim || ''
-                    const observacoesValue = row.Observacoes || row.observacoes || ''
+                    // 1. Tentar mapear campos Sigmanet vs Manual
+                    let dataRaw = row.Data || row.data || row.datIniVagas || ''
+                    let localRaw = row.Local || row.local || row.nomLocalServico || ''
+                    // Tipo e Horas dependem do formato
+                    let tipoRaw = row.Tipo || row.tipo
+                    let obsRaw = row.Observacoes || row.observacoes || row.nomGrupoServico || ''
 
-                    // Validar data
-                    const normalizedData = normalizeData(dataValue)
+                    // 2. Processar Horários
+                    let horaInicio: number | null = null
+                    let horaFim: number | null = null
+
+                    // Se for formato Sigmanet com "nomTurno"
+                    if (row.nomTurno) {
+                        const parsedTurno = parseTurno(row.nomTurno)
+                        if (parsedTurno) {
+                            horaInicio = parsedTurno.inicio
+                            horaFim = parsedTurno.fim
+                        }
+                    } else {
+                        // Formato manual com colunas separadas
+                        horaInicio = normalizeHora(row.HoraInicio || row.horaInicio || row.hora_inicio || '')
+                        horaFim = normalizeHora(row.HoraFim || row.horaFim || row.hora_fim || '')
+                    }
+
+                    // 3. Validar Data
+                    const normalizedData = normalizeData(dataRaw)
                     if (!normalizedData) {
-                        errors.push(`Linha ${rowNum}: Data inválida "${dataValue}"`)
+                        // Se não encontrou data válida, tentar logar o que veio para debug
+                        // Ignorar linhas vazias ou metadados estranhos
+                        if (!dataRaw && !localRaw && !row.nomTurno) return
+
+                        errors.push(`Linha ${rowNum}: Data inválida "${dataRaw}"`)
                         return
                     }
 
-                    // Validar tipo
-                    const normalizedTipo = normalizeTipo(tipoValue)
-                    if (!normalizedTipo) {
-                        errors.push(`Linha ${rowNum}: Tipo inválido "${tipoValue}" (use Ordinária ou Extra)`)
-                        return
-                    }
+                    // 4. Determinar Tipo
+                    // Se horaFim não foi parseada ainda, não dá pra inferir tipo
+                    const tipoFinal = determineTipo(tipoRaw, (horaInicio !== null && horaFim !== null) ? { inicio: horaInicio, fim: horaFim } : null)
 
-                    // Validar local
-                    if (!localValue.trim()) {
+                    // 5. Validar Local
+                    if (!localRaw.trim()) {
                         errors.push(`Linha ${rowNum}: Local é obrigatório`)
                         return
                     }
 
-                    // Validar horas
-                    const horaInicio = normalizeHora(horaInicioValue)
+                    // 6. Validar Horas Finais
                     if (horaInicio === null) {
-                        errors.push(`Linha ${rowNum}: Hora início inválida "${horaInicioValue}"`)
+                        errors.push(`Linha ${rowNum}: Hora início não encontrada (verifique coluna HoraInicio ou nomTurno)`)
                         return
                     }
-
-                    const horaFim = normalizeHora(horaFimValue)
                     if (horaFim === null) {
-                        errors.push(`Linha ${rowNum}: Hora fim inválida "${horaFimValue}"`)
+                        errors.push(`Linha ${rowNum}: Hora fim não encontrada`)
                         return
                     }
 
                     // Adicionar escala válida
                     data.push({
                         data: normalizedData,
-                        tipo: normalizedTipo,
-                        local: localValue.trim(),
+                        tipo: tipoFinal,
+                        local: localRaw.trim(),
                         horaInicio,
                         horaFim,
-                        observacoes: observacoesValue.trim() || undefined,
+                        observacoes: obsRaw.trim() || undefined,
                     })
                 })
 

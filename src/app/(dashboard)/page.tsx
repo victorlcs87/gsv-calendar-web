@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Plus, Upload, Filter, CalendarDays, Loader2 } from 'lucide-react'
+import { Plus, Upload, Filter, CalendarDays, Loader2, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -14,6 +14,8 @@ import { ThemeToggle } from '@/components/layout'
 import type { Scale, TipoEscala, ScaleFilters } from '@/types'
 import { useScales } from '@/hooks/useScales'
 import { useScaleMutations } from '@/hooks/useScaleMutations'
+import { exportScalesToCsv } from '@/lib/export'
+import { toast } from 'sonner'
 
 /**
  * Página principal de Escalas
@@ -99,6 +101,15 @@ export default function EscalasPage() {
         setEditingScale(undefined)
     }
 
+    const handleExport = () => {
+        try {
+            exportScalesToCsv(filteredScales)
+            toast.success('Exportação iniciada!')
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Erro ao exportar')
+        }
+    }
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -111,6 +122,10 @@ export default function EscalasPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <ThemeToggle />
+                    <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredScales.length === 0}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Exportar
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => setCsvModalOpen(true)}>
                         <Upload className="mr-2 h-4 w-4" />
                         Importar CSV
@@ -257,6 +272,7 @@ export default function EscalasPage() {
                 open={csvModalOpen}
                 onOpenChange={setCsvModalOpen}
                 onSuccess={refresh}
+                existingScales={scales}
             />
         </div>
     )

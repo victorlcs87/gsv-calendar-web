@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Upload, FileText, AlertCircle, CheckCircle2, Download, Loader2 } from 'lucide-react'
+import { Upload, FileText, AlertCircle, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     Dialog,
@@ -11,8 +11,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { parseCsvFile, generateCsvTemplate, type CsvParseResult } from '@/lib/csvParser'
+import { parseCsvFile, type CsvParseResult } from '@/lib/csvParser'
 import { useScaleMutations } from '@/hooks/useScaleMutations'
+import { useScales } from '@/hooks/useScales'
 import { toast } from 'sonner'
 
 /**
@@ -29,7 +30,7 @@ interface CsvImportDialogProps {
 
 /**
  * Dialog para importação de escalas via CSV
- * Permite upload, preview e importação em massa
+ * Permite upload, preview e importação em massa com deduplicação
  */
 export function CsvImportDialog({
     open,
@@ -42,6 +43,7 @@ export function CsvImportDialog({
     const [isImporting, setIsImporting] = useState(false)
 
     const { createScale } = useScaleMutations()
+    const { scales: existingScales } = useScales()
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0]
@@ -63,8 +65,22 @@ export function CsvImportDialog({
         setIsImporting(true)
         let successCount = 0
         let errorCount = 0
+        let duplicateCount = 0
 
         for (const scale of parseResult.data) {
+            // Verificar duplicidade
+            const isDuplicate = existingScales.some(existing => {
+                return existing.data === scale.data &&
+                    existing.local === scale.local &&
+                    existing.horaInicio === scale.horaInicio &&
+                    existing.horaFim === scale.horaFim
+            })
+
+            if (isDuplicate) {
+                duplicateCount++
+                continue
+            }
+
             const success = await createScale(scale)
             if (success) {
                 successCount++
@@ -75,12 +91,22 @@ export function CsvImportDialog({
 
         setIsImporting(false)
 
-        if (errorCount === 0) {
-            toast.success(`${successCount} escalas importadas com sucesso!`)
+        if (successCount > 0) {
+            let msg = `${successCount} escalas importadas.`
+            if (duplicateCount > 0) msg += ` ${duplicateCount} duplicadas ignoradas.`
+            if (errorCount > 0) msg += ` ${errorCount} erros.`
+
+            toast.success('Importação concluída', { description: msg })
             onSuccess?.()
             handleClose()
-        } else {
-            toast.warning(`${successCount} importadas, ${errorCount} erros`)
+        } else if (duplicateCount > 0) {
+            toast.info('Nenhuma novidade', {
+                description: `Todas as ${duplicateCount} escalas já existiam.`
+            })
+            // Resetar o estado para permitir nova tentativa se desejar, mas fechando é padrão
+            handleClose()
+        } else if (errorCount > 0) {
+            toast.error('Erro na importação', { description: `${errorCount} falhas.` })
         }
     }
 
@@ -93,17 +119,6 @@ export function CsvImportDialog({
         onOpenChange(false)
     }
 
-    const handleDownloadTemplate = () => {
-        const csv = generateCsvTemplate()
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = 'escalas_template.csv'
-        link.click()
-        URL.revokeObjectURL(url)
-    }
-
     return (
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-lg">
@@ -111,6 +126,7 @@ export function CsvImportDialog({
                     <DialogTitle>Importar Escalas via CSV</DialogTitle>
                     <DialogDescription>
                         Faça upload de um arquivo CSV com suas escalas.
+                        Escalas duplicadas serão ignoradas automaticamente.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -155,15 +171,15 @@ export function CsvImportDialog({
                                     <div className="flex items-center gap-2 text-green-600">
                                         <CheckCircle2 className="h-4 w-4" />
                                         <span className="text-sm">
-                                            {parseResult.data.length} escalas válidas
+                                            {parseResult.data.length} escalas identificadas
                                         </span>
                                     </div>
                                 )}
                                 {parseResult.errors.length > 0 && (
                                     <div className="flex items-center gap-2 text-destructive">
-                                        <AlertCircle className="h-4 w-4" />
+                                        <AlertTriangle className="h-4 w-4" />
                                         <span className="text-sm">
-                                            {parseResult.errors.length} erros
+                                            {parseResult.errors.length} alertas
                                         </span>
                                     </div>
                                 )}
@@ -203,17 +219,6 @@ export function CsvImportDialog({
                             )}
                         </div>
                     )}
-
-                    {/* Template Download */}
-                    <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0"
-                        onClick={handleDownloadTemplate}
-                    >
-                        <Download className="mr-2 h-4 w-4" />
-                        Baixar template CSV de exemplo
-                    </Button>
                 </div>
 
                 <DialogFooter>
@@ -227,12 +232,10 @@ export function CsvImportDialog({
                         {isImporting ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Importando...
+                                Processando...
                             </>
-                        ) : parseResult?.data.length ? (
-                            `Importar ${parseResult.data.length} escalas`
                         ) : (
-                            'Importar'
+                            'Confirmar Importação'
                         )}
                     </Button>
                 </DialogFooter>
