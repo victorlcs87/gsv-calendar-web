@@ -9,12 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { ScaleCard } from '@/components/scales'
+import { ScaleCard, ScaleFormModal, CsvImportDialog } from '@/components/scales'
 import { ThemeToggle } from '@/components/layout'
 import type { Scale, TipoEscala, ScaleFilters } from '@/types'
 import { useScales } from '@/hooks/useScales'
 import { useScaleMutations } from '@/hooks/useScaleMutations'
-import { toast } from 'sonner'
 
 /**
  * Página principal de Escalas
@@ -28,6 +27,13 @@ export default function EscalasPage() {
     const [filters, setFilters] = useState<ScaleFilters>({})
     const [showFilters, setShowFilters] = useState(false)
     const [calendarOpen, setCalendarOpen] = useState(false)
+
+    // Estados do modal CRUD
+    const [formModalOpen, setFormModalOpen] = useState(false)
+    const [editingScale, setEditingScale] = useState<Scale | undefined>(undefined)
+
+    // Estado do modal de importação CSV
+    const [csvModalOpen, setCsvModalOpen] = useState(false)
 
     // Filtrar escalas por mês e filtros
     const filteredScales = useMemo(() => {
@@ -71,16 +77,26 @@ export default function EscalasPage() {
         )
     }, [filteredScales])
 
+    const handleNewScale = () => {
+        setEditingScale(undefined)
+        setFormModalOpen(true)
+    }
+
     const handleEdit = (scale: Scale) => {
-        console.log('Edit scale:', scale)
-        toast.info('Funcionalidade de edição em breve')
-        // TODO: Abrir modal de edição
+        setEditingScale(scale)
+        setFormModalOpen(true)
     }
 
     const handleDelete = async (scale: Scale) => {
         if (confirm('Tem certeza que deseja excluir esta escala?')) {
             await deleteScale(scale.id)
         }
+    }
+
+    const handleFormSuccess = () => {
+        refresh()
+        setFormModalOpen(false)
+        setEditingScale(undefined)
     }
 
     return (
@@ -95,11 +111,11 @@ export default function EscalasPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <ThemeToggle />
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => setCsvModalOpen(true)}>
                         <Upload className="mr-2 h-4 w-4" />
                         Importar CSV
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={handleNewScale}>
                         <Plus className="mr-2 h-4 w-4" />
                         Nova Escala
                     </Button>
@@ -221,12 +237,27 @@ export default function EscalasPage() {
                     <p className="text-muted-foreground">
                         Adicione escalas manualmente ou importe um arquivo CSV.
                     </p>
-                    <Button className="mt-4">
+                    <Button className="mt-4" onClick={handleNewScale}>
                         <Plus className="mr-2 h-4 w-4" />
                         Nova Escala
                     </Button>
                 </div>
             )}
+
+            {/* Modal de Criar/Editar Escala */}
+            <ScaleFormModal
+                open={formModalOpen}
+                onOpenChange={setFormModalOpen}
+                scale={editingScale}
+                onSuccess={handleFormSuccess}
+            />
+
+            {/* Modal de Importação CSV */}
+            <CsvImportDialog
+                open={csvModalOpen}
+                onOpenChange={setCsvModalOpen}
+                onSuccess={refresh}
+            />
         </div>
     )
 }

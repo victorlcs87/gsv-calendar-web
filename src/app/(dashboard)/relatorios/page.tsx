@@ -3,31 +3,19 @@
 import { useState, useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths, addMonths } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown, Clock, DollarSign } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown, Clock, DollarSign, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/layout'
-import type { Scale, MonthlyReport } from '@/types'
-
-/**
- * Dados mock para demonstração
- * TODO: Substituir por dados do Supabase
- */
-const mockScales: Scale[] = [
-    { id: '1', user_id: 'user1', data: '2026-01-05', tipo: 'Ordinária', local: 'QCG', horaInicio: 7, horaFim: 19, horas: 12, valorBruto: 600, valorLiquido: 435, sincronizado: true, syncStatus: 'synced', created_at: '', updated_at: '' },
-    { id: '2', user_id: 'user1', data: '2026-01-10', tipo: 'Extra', local: '1º GBM', horaInicio: 19, horaFim: 7, horas: 12, valorBruto: 600, valorLiquido: 435, sincronizado: false, syncStatus: 'pending', created_at: '', updated_at: '' },
-    { id: '3', user_id: 'user1', data: '2026-01-15', tipo: 'Ordinária', local: '5º GBM', horaInicio: 7, horaFim: 19, horas: 12, valorBruto: 600, valorLiquido: 435, sincronizado: true, syncStatus: 'synced', created_at: '', updated_at: '' },
-    { id: '4', user_id: 'user1', data: '2026-01-20', tipo: 'Ordinária', local: 'QCG', horaInicio: 7, horaFim: 19, horas: 12, valorBruto: 600, valorLiquido: 435, sincronizado: true, syncStatus: 'synced', created_at: '', updated_at: '' },
-    { id: '5', user_id: 'user1', data: '2026-02-01', tipo: 'Ordinária', local: 'QCG', horaInicio: 7, horaFim: 19, horas: 12, valorBruto: 600, valorLiquido: 435, sincronizado: true, syncStatus: 'synced', created_at: '', updated_at: '' },
-    { id: '6', user_id: 'user1', data: '2026-02-05', tipo: 'Extra', local: '1º GBM', horaInicio: 19, horaFim: 7, horas: 12, valorBruto: 600, valorLiquido: 435, sincronizado: false, syncStatus: 'pending', created_at: '', updated_at: '' },
-    { id: '7', user_id: 'user1', data: '2026-02-10', tipo: 'Ordinária', local: '5º GBM', horaInicio: 7, horaFim: 19, horas: 12, valorBruto: 600, valorLiquido: 435, sincronizado: true, syncStatus: 'synced', created_at: '', updated_at: '' },
-]
+import type { MonthlyReport } from '@/types'
+import { useScales } from '@/hooks/useScales'
 
 /**
  * Página de Relatórios
  * Exibe estatísticas mensais e anuais das escalas
  */
 export default function RelatoriosPage() {
+    const { scales, isLoading } = useScales()
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
     // Calcular relatório do mês selecionado
@@ -35,8 +23,8 @@ export default function RelatoriosPage() {
         const monthStart = startOfMonth(selectedDate)
         const monthEnd = endOfMonth(selectedDate)
 
-        const monthScales = mockScales.filter((scale) =>
-            isWithinInterval(parseISO(scale.data), { start: monthStart, end: monthEnd })
+        const monthScales = scales.filter((scale) =>
+            scale.data && isWithinInterval(parseISO(scale.data), { start: monthStart, end: monthEnd })
         )
 
         return {
@@ -48,7 +36,7 @@ export default function RelatoriosPage() {
             escalasOrdinarias: monthScales.filter((s) => s.tipo === 'Ordinária').length,
             escalasExtras: monthScales.filter((s) => s.tipo === 'Extra').length,
         }
-    }, [selectedDate])
+    }, [selectedDate, scales])
 
     // Calcular relatório do mês anterior para comparação
     const previousMonthReport = useMemo((): MonthlyReport => {
@@ -56,8 +44,8 @@ export default function RelatoriosPage() {
         const monthStart = startOfMonth(prevDate)
         const monthEnd = endOfMonth(prevDate)
 
-        const monthScales = mockScales.filter((scale) =>
-            isWithinInterval(parseISO(scale.data), { start: monthStart, end: monthEnd })
+        const monthScales = scales.filter((scale) =>
+            scale.data && isWithinInterval(parseISO(scale.data), { start: monthStart, end: monthEnd })
         )
 
         return {
@@ -69,7 +57,8 @@ export default function RelatoriosPage() {
             escalasOrdinarias: monthScales.filter((s) => s.tipo === 'Ordinária').length,
             escalasExtras: monthScales.filter((s) => s.tipo === 'Extra').length,
         }
-    }, [selectedDate])
+    }, [selectedDate, scales])
+
 
     const getDiff = (current: number, previous: number) => {
         if (previous === 0) return current > 0 ? 100 : 0

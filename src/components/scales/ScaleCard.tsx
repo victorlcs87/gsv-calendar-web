@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Scale } from '@/types'
-import { cn } from '@/lib/utils'
+import { cn, parseLocalDate } from '@/lib/utils'
 
 /**
  * Props do ScaleCard
@@ -21,8 +21,9 @@ interface ScaleCardProps {
  * Mostra data, local, horas e valores com ações de editar/excluir
  */
 export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
-    const dataFormatada = format(new Date(scale.data), "dd 'de' MMMM", { locale: ptBR })
-    const diaSemana = format(new Date(scale.data), 'EEEE', { locale: ptBR })
+    // FIX: Usar parseLocalDate para evitar problemas de timezone
+    const dataFormatada = format(parseLocalDate(scale.data), "dd 'de' MMMM", { locale: ptBR })
+    const diaSemana = format(parseLocalDate(scale.data), 'EEEE', { locale: ptBR })
     const isOrdinaria = scale.tipo === 'Ordinária'
 
     return (
