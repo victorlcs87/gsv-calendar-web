@@ -47,8 +47,16 @@ O objetivo é garantir paridade de recursos com o projeto mobile original (`gsv-
 - [x] **Deduplicação Inteligente**: Ignora escalas duplicadas na importação.
     - *Correção*: Sincronização de estado consertada para permitir reimportação após exclusão.
 
-### Fase 6: Integração de Calendário (Pendente ⏳)
-*Diferença Mobile vs Web*: O app mobile usa `expo-calendar` para acesso nativo. A web usará API do Google Calendar ou arquivo .ICS.*
+### Fase 6: Integração de Calendário (Concluída ✅)
+- [x] **Configuração GCP**: Credenciais OAuth criadas e configuradas.
+- [x] **Autenticação**: Login com Google via Supabase Auth funcional.
+- [x] **UI**: Botão de Sincronização implementado.
+- [x] **Sincronização**:
+    - [x] Permitir nome personalizado para o calendário (Padrão: "GSV Calendar").
+    - [x] Lógica para criar eventos no Google Calendar.
+    - [x] Atualizar status de sincronização no banco de dados.
+
+### Fase 7: Deploy e Finalização (Pendente ⏳)
 
 - [ ] OAuth com Google (NextAuth ou Supabase Auth Provider)
 - [ ] Sincronização Bidirecional ou Unidirecional (Push para GCal)

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { ScaleCard, ScaleFormModal, CsvImportDialog } from '@/components/scales'
+import { SyncButton } from '@/components/calendar'
 import { ThemeToggle } from '@/components/layout'
 import type { Scale, TipoEscala, ScaleFilters } from '@/types'
 import { useScales } from '@/hooks/useScales'
@@ -126,6 +127,7 @@ export default function EscalasPage() {
                         <Download className="mr-2 h-4 w-4" />
                         Exportar
                     </Button>
+                    <SyncButton scales={filteredScales} />
                     <Button variant="outline" size="sm" onClick={() => setCsvModalOpen(true)}>
                         <Upload className="mr-2 h-4 w-4" />
                         Importar CSV

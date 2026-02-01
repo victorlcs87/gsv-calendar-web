@@ -19,6 +19,11 @@ import { toast } from 'sonner'
 /**
  * Props do componente CsvImportDialog
  */
+import type { Scale } from '@/types'
+
+/**
+ * Props do componente CsvImportDialog
+ */
 interface CsvImportDialogProps {
     /** Se o dialog está aberto */
     open: boolean
@@ -26,6 +31,8 @@ interface CsvImportDialogProps {
     onOpenChange: (open: boolean) => void
     /** Callback após importar com sucesso */
     onSuccess?: () => void
+    /** Escalas existentes para verificar duplicação */
+    existingScales: Scale[]
 }
 
 /**
@@ -36,6 +43,7 @@ export function CsvImportDialog({
     open,
     onOpenChange,
     onSuccess,
+    existingScales,
 }: CsvImportDialogProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [file, setFile] = useState<File | null>(null)
@@ -43,7 +51,7 @@ export function CsvImportDialog({
     const [isImporting, setIsImporting] = useState(false)
 
     const { createScale } = useScaleMutations()
-    const { scales: existingScales } = useScales()
+    // const { scales: existingScales } = useScales() -> Removed internal hook usage
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0]
