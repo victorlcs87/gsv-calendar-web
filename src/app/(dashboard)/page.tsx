@@ -4,11 +4,11 @@ import { useState, useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Plus, Upload, Filter, CalendarDays, Loader2, Download } from 'lucide-react'
+import { DateRange } from "react-day-picker" // Import DateRange type
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar } from '@/components/ui/calendar'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { ScaleCard, ScaleFormModal, CsvImportDialog } from '@/components/scales'
 import { SyncButton } from '@/components/calendar'
 import { ThemeToggle } from '@/components/layout'
@@ -26,10 +26,14 @@ export default function EscalasPage() {
     const { scales, isLoading, refresh } = useScales()
     const { deleteScale } = useScaleMutations(refresh)
 
-    const [selectedMonth, setSelectedMonth] = useState<Date>(new Date())
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+        from: startOfMonth(new Date()),
+        to: endOfMonth(new Date())
+    })
+
     const [filters, setFilters] = useState<ScaleFilters>({})
     const [showFilters, setShowFilters] = useState(false)
-    const [calendarOpen, setCalendarOpen] = useState(false)
+    // Removed calendarOpen state
 
     // Estados do modal CRUD
     const [formModalOpen, setFormModalOpen] = useState(false)
@@ -38,18 +42,36 @@ export default function EscalasPage() {
     // Estado do modal de importação CSV
     const [csvModalOpen, setCsvModalOpen] = useState(false)
 
-    // Filtrar escalas por mês e filtros
+    // Filtrar escalas por período e filtros
     const filteredScales = useMemo(() => {
-        const monthStart = startOfMonth(selectedMonth)
-        const monthEnd = endOfMonth(selectedMonth)
+        if (!dateRange?.from) return scales
+
+        // Ajustar fim para o final do dia se existir, ou usar o início como fim (intervalo de 1 dia)
+        const start = dateRange.from
+        // Se 'to' existir, pega o final desse dia. Se não, usa o final do dia 'from'.
+        // Mas o DateRange picker do shadcn as vezes retorna undefined no 'to' durante a seleção.
+        // Vamos considerar intervalo válido apenas se tiver from.
+        const end = dateRange.to ? new Date(dateRange.to) : new Date(start)
+        // Garantir que englobe o dia inteiro
+        end.setHours(23, 59, 59, 999)
+        start.setHours(0, 0, 0, 0)
+
+        // Intervalo para comparação
+        const interval = { start, end }
 
         return scales.filter((scale) => {
             // Verificar se a data é válida
             if (!scale.data) return false
             const scaleDate = parseISO(scale.data)
 
-            // Filtro por mês
-            if (!isWithinInterval(scaleDate, { start: monthStart, end: monthEnd })) {
+            // Filtro por data (Range)
+            // isWithinInterval lança erro se start > end, mas nosso setup garante start <= end
+            // exceto se o componente retornar algo estranho.
+            try {
+                if (!isWithinInterval(scaleDate, interval)) {
+                    return false
+                }
+            } catch (e) {
                 return false
             }
 
@@ -65,7 +87,7 @@ export default function EscalasPage() {
 
             return true
         })
-    }, [scales, selectedMonth, filters])
+    }, [scales, dateRange, filters])
 
     // Totais do mês
     const totals = useMemo(() => {
@@ -118,7 +140,15 @@ export default function EscalasPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">Escalas</h1>
                     <p className="text-muted-foreground">
-                        {format(selectedMonth, "MMMM 'de' yyyy", { locale: ptBR })}
+                        {dateRange?.from ? (
+                            dateRange.to ? (
+                                `${format(dateRange.from, "dd 'de' MMM", { locale: ptBR })} - ${format(dateRange.to, "dd 'de' MMM, yyyy", { locale: ptBR })}`
+                            ) : (
+                                format(dateRange.from, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+                            )
+                        ) : (
+                            'Selecione um período'
+                        )}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -161,30 +191,11 @@ export default function EscalasPage() {
 
             {/* Filtros */}
             <div className="flex flex-wrap items-center gap-2">
-                {/* Seletor de Mês */}
-                <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="gap-2">
-                            <CalendarDays className="h-4 w-4" />
-                            {format(selectedMonth, 'MMM yyyy', { locale: ptBR })}
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="w-auto p-4">
-                        <DialogHeader>
-                            <DialogTitle>Selecionar Mês</DialogTitle>
-                        </DialogHeader>
-                        <Calendar
-                            mode="single"
-                            selected={selectedMonth}
-                            onSelect={(date) => {
-                                if (date) {
-                                    setSelectedMonth(date)
-                                    setCalendarOpen(false)
-                                }
-                            }}
-                        />
-                    </DialogContent>
-                </Dialog>
+                {/* Seletor de Período */}
+                <DateRangePicker
+                    date={dateRange}
+                    setDate={setDateRange}
+                />
 
                 <Button
                     variant={showFilters ? 'secondary' : 'outline'}

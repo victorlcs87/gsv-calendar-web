@@ -3,8 +3,10 @@
 import { useState, useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths, addMonths } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { DateRange } from "react-day-picker"
 import { ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown, Clock, DollarSign, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/layout'
 import type { MonthlyReport } from '@/types'
@@ -16,48 +18,84 @@ import { useScales } from '@/hooks/useScales'
  */
 export default function RelatoriosPage() {
     const { scales, isLoading } = useScales()
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+        from: startOfMonth(new Date()),
+        to: endOfMonth(new Date())
+    })
 
-    // Calcular relatório do mês selecionado
-    const currentMonthReport = useMemo((): MonthlyReport => {
-        const monthStart = startOfMonth(selectedDate)
-        const monthEnd = endOfMonth(selectedDate)
+    // Calcular relatório do período selecionado
+    const currentReport = useMemo((): MonthlyReport => {
+        if (!dateRange?.from) return {
+            mes: 'Período Inválido',
+            totalEscalas: 0,
+            totalHoras: 0,
+            valorBrutoTotal: 0,
+            valorLiquidoTotal: 0,
+            escalasOrdinarias: 0,
+            escalasExtras: 0,
+        }
 
-        const monthScales = scales.filter((scale) =>
-            scale.data && isWithinInterval(parseISO(scale.data), { start: monthStart, end: monthEnd })
-        )
+        const start = dateRange.from
+        const end = dateRange.to ? new Date(dateRange.to) : new Date(start)
+        end.setHours(23, 59, 59, 999)
+        start.setHours(0, 0, 0, 0)
+
+        const interval = { start, end }
+
+        const periodScales = scales.filter((scale) => {
+            if (!scale.data) return false
+            try {
+                return isWithinInterval(parseISO(scale.data), interval)
+            } catch { return false }
+        })
 
         return {
-            mes: format(selectedDate, 'yyyy-MM'),
-            totalEscalas: monthScales.length,
-            totalHoras: monthScales.reduce((acc, s) => acc + s.horas, 0),
-            valorBrutoTotal: monthScales.reduce((acc, s) => acc + s.valorBruto, 0),
-            valorLiquidoTotal: monthScales.reduce((acc, s) => acc + s.valorLiquido, 0),
-            escalasOrdinarias: monthScales.filter((s) => s.tipo === 'Ordinária').length,
-            escalasExtras: monthScales.filter((s) => s.tipo === 'Extra').length,
+            mes: 'Período Atual', // Usado apenas internamente ou display genérico
+            totalEscalas: periodScales.length,
+            totalHoras: periodScales.reduce((acc, s) => acc + s.horas, 0),
+            valorBrutoTotal: periodScales.reduce((acc, s) => acc + s.valorBruto, 0),
+            valorLiquidoTotal: periodScales.reduce((acc, s) => acc + s.valorLiquido, 0),
+            escalasOrdinarias: periodScales.filter((s) => s.tipo === 'Ordinária').length,
+            escalasExtras: periodScales.filter((s) => s.tipo === 'Extra').length,
         }
-    }, [selectedDate, scales])
+    }, [dateRange, scales])
 
-    // Calcular relatório do mês anterior para comparação
-    const previousMonthReport = useMemo((): MonthlyReport => {
-        const prevDate = subMonths(selectedDate, 1)
-        const monthStart = startOfMonth(prevDate)
-        const monthEnd = endOfMonth(prevDate)
+    // Calcular relatório do período anterior para comparação
+    const previousReport = useMemo((): MonthlyReport => {
+        if (!dateRange?.from) return { mes: '', totalEscalas: 0, totalHoras: 0, valorBrutoTotal: 0, valorLiquidoTotal: 0, escalasOrdinarias: 0, escalasExtras: 0 }
 
-        const monthScales = scales.filter((scale) =>
-            scale.data && isWithinInterval(parseISO(scale.data), { start: monthStart, end: monthEnd })
-        )
+        const currentStart = dateRange.from
+        const currentEnd = dateRange.to ? new Date(dateRange.to) : new Date(currentStart)
+
+        // Calcular duração em milissegundos
+        const duration = currentEnd.getTime() - currentStart.getTime()
+
+        // Período anterior: termina logo antes do começo do atual
+        const prevEnd = new Date(currentStart.getTime() - 86400000) // -1 dia
+        const prevStart = new Date(prevEnd.getTime() - duration)
+
+        prevEnd.setHours(23, 59, 59, 999)
+        prevStart.setHours(0, 0, 0, 0)
+
+        const interval = { start: prevStart, end: prevEnd }
+
+        const periodScales = scales.filter((scale) => {
+            if (!scale.data) return false
+            try {
+                return isWithinInterval(parseISO(scale.data), interval)
+            } catch { return false }
+        })
 
         return {
-            mes: format(prevDate, 'yyyy-MM'),
-            totalEscalas: monthScales.length,
-            totalHoras: monthScales.reduce((acc, s) => acc + s.horas, 0),
-            valorBrutoTotal: monthScales.reduce((acc, s) => acc + s.valorBruto, 0),
-            valorLiquidoTotal: monthScales.reduce((acc, s) => acc + s.valorLiquido, 0),
-            escalasOrdinarias: monthScales.filter((s) => s.tipo === 'Ordinária').length,
-            escalasExtras: monthScales.filter((s) => s.tipo === 'Extra').length,
+            mes: 'Período Anterior',
+            totalEscalas: periodScales.length,
+            totalHoras: periodScales.reduce((acc, s) => acc + s.horas, 0),
+            valorBrutoTotal: periodScales.reduce((acc, s) => acc + s.valorBruto, 0),
+            valorLiquidoTotal: periodScales.reduce((acc, s) => acc + s.valorLiquido, 0),
+            escalasOrdinarias: periodScales.filter((s) => s.tipo === 'Ordinária').length,
+            escalasExtras: periodScales.filter((s) => s.tipo === 'Extra').length,
         }
-    }, [selectedDate, scales])
+    }, [dateRange, scales])
 
 
     const getDiff = (current: number, previous: number) => {
@@ -65,8 +103,8 @@ export default function RelatoriosPage() {
         return ((current - previous) / previous) * 100
     }
 
-    const horasDiff = getDiff(currentMonthReport.totalHoras, previousMonthReport.totalHoras)
-    const valorDiff = getDiff(currentMonthReport.valorLiquidoTotal, previousMonthReport.valorLiquidoTotal)
+    const horasDiff = getDiff(currentReport.totalHoras, previousReport.totalHoras)
+    const valorDiff = getDiff(currentReport.valorLiquidoTotal, previousReport.valorLiquidoTotal)
 
     return (
         <div className="space-y-6">
@@ -74,7 +112,7 @@ export default function RelatoriosPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">Relatórios</h1>
-                    <p className="text-muted-foreground">Acompanhe suas estatísticas mensais</p>
+                    <p className="text-muted-foreground">Acompanhe suas estatísticas</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <ThemeToggle />
@@ -85,17 +123,13 @@ export default function RelatoriosPage() {
                 </div>
             </div>
 
-            {/* Navegação de Mês */}
-            <div className="flex items-center justify-center gap-4">
-                <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <h2 className="min-w-48 text-center text-xl font-semibold">
-                    {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
-                </h2>
-                <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
+            {/* Seletor de Período */}
+            <div className="flex items-center justify-center gap-4 py-4">
+                <DateRangePicker
+                    date={dateRange}
+                    setDate={setDateRange}
+                    className="w-full sm:w-auto"
+                />
             </div>
 
             {/* Cards de Estatísticas */}
@@ -106,9 +140,9 @@ export default function RelatoriosPage() {
                         <Clock className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{currentMonthReport.totalEscalas}</div>
+                        <div className="text-3xl font-bold">{currentReport.totalEscalas}</div>
                         <p className="text-xs text-muted-foreground">
-                            {currentMonthReport.escalasOrdinarias} ordinárias, {currentMonthReport.escalasExtras} extras
+                            {currentReport.escalasOrdinarias} ordinárias, {currentReport.escalasExtras} extras
                         </p>
                     </CardContent>
                 </Card>
@@ -123,9 +157,9 @@ export default function RelatoriosPage() {
                         )}
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{currentMonthReport.totalHoras}h</div>
+                        <div className="text-3xl font-bold">{currentReport.totalHoras}h</div>
                         <p className={`text-xs ${horasDiff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {horasDiff >= 0 ? '+' : ''}{horasDiff.toFixed(1)}% vs mês anterior
+                            {horasDiff >= 0 ? '+' : ''}{horasDiff.toFixed(1)}% vs período anterior
                         </p>
                     </CardContent>
                 </Card>
@@ -137,7 +171,7 @@ export default function RelatoriosPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">
-                            R$ {currentMonthReport.valorBrutoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            R$ {currentReport.valorBrutoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </div>
                         <p className="text-xs text-muted-foreground">Antes dos descontos</p>
                     </CardContent>
@@ -154,10 +188,10 @@ export default function RelatoriosPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-primary">
-                            R$ {currentMonthReport.valorLiquidoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            R$ {currentReport.valorLiquidoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </div>
                         <p className={`text-xs ${valorDiff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {valorDiff >= 0 ? '+' : ''}{valorDiff.toFixed(1)}% vs mês anterior
+                            {valorDiff >= 0 ? '+' : ''}{valorDiff.toFixed(1)}% vs período anterior
                         </p>
                     </CardContent>
                 </Card>
@@ -173,7 +207,7 @@ export default function RelatoriosPage() {
                         <div className="flex items-center justify-between rounded-lg border p-4">
                             <div>
                                 <p className="text-sm text-muted-foreground">Escalas Ordinárias</p>
-                                <p className="text-2xl font-bold">{currentMonthReport.escalasOrdinarias}</p>
+                                <p className="text-2xl font-bold">{currentReport.escalasOrdinarias}</p>
                             </div>
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                                 <div className="h-4 w-4 rounded-full bg-primary" />
@@ -182,7 +216,7 @@ export default function RelatoriosPage() {
                         <div className="flex items-center justify-between rounded-lg border p-4">
                             <div>
                                 <p className="text-sm text-muted-foreground">Escalas Extras</p>
-                                <p className="text-2xl font-bold">{currentMonthReport.escalasExtras}</p>
+                                <p className="text-2xl font-bold">{currentReport.escalasExtras}</p>
                             </div>
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/10">
                                 <div className="h-4 w-4 rounded-full bg-secondary" />
