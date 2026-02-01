@@ -139,8 +139,20 @@ export function parseCsvFile(file: File): Promise<CsvParseResult> {
                     let dataRaw = row.Data || row.data || row.datIniVagas || ''
                     let localRaw = row.Local || row.local || row.nomLocalServico || ''
                     // Tipo e Horas dependem do formato
+                    // Tipo e Horas dependem do formato
                     let tipoRaw = row.Tipo || row.tipo
-                    let obsRaw = row.Observacoes || row.observacoes || row.nomGrupoServico || ''
+
+                    // Lógica de Observação e Operação (nomGrupoServico)
+                    let obsManual = row.Observacoes || row.observacoes || ''
+                    let operacao = row.nomGrupoServico || ''
+                    let obsRaw = ''
+
+                    if (operacao) {
+                        obsRaw = `Operação: ${operacao}`
+                        if (obsManual) obsRaw += `\n${obsManual}`
+                    } else {
+                        obsRaw = obsManual
+                    }
 
                     // 2. Processar Horários
                     let horaInicio: number | null = null

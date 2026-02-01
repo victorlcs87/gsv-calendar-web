@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { addDays, format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -114,15 +115,24 @@ export function SyncButton({ scales }: SyncButtonProps) {
             for (const scale of scalesToSync) {
                 // Formato de data para Google Event (ISO com Timezone ou Date puro)
                 // Assumindo scale.data YYYY-MM-DD
-                const startDateTime = `${scale.data}T${scale.horaInicio.toString().padStart(2, '0')}:00:00`
-                // Calculando fim (simplificado)
-                const endDateTime = `${scale.data}T${scale.horaFim.toString().padStart(2, '0')}:00:00`
+                const startIso = parseISO(`${scale.data}T${scale.horaInicio.toString().padStart(2, '0')}:00:00`)
+                let endIso = parseISO(`${scale.data}T${scale.horaFim.toString().padStart(2, '0')}:00:00`)
+
+                // Se hora fim <= hora inicio (ex: 8h as 8h = 24h, ou 20h as 8h), adicionar 1 dia
+                if (scale.horaFim <= scale.horaInicio) {
+                    endIso = addDays(endIso, 1)
+                }
+
+                // Extrair Operação para descrição
+                const operacaoMatch = scale.observacoes?.match(/Operação: (.*?)(?:\n|$)/)
+                const operacao = operacaoMatch ? operacaoMatch[1] : ''
+                const description = operacao ? `GSV - ${operacao}` : (scale.observacoes || 'Sem observações')
 
                 await insertEvent(token, targetCalendarId, {
                     summary: `Escala ${scale.tipo} - ${scale.local}`,
-                    description: scale.observacoes || 'Sem observações',
-                    start: { dateTime: startDateTime, timeZone: 'America/Sao_Paulo' },
-                    end: { dateTime: endDateTime, timeZone: 'America/Sao_Paulo' },
+                    description: description,
+                    start: { dateTime: format(startIso, "yyyy-MM-dd'T'HH:mm:ss"), timeZone: 'America/Sao_Paulo' },
+                    end: { dateTime: format(endIso, "yyyy-MM-dd'T'HH:mm:ss"), timeZone: 'America/Sao_Paulo' },
                     location: scale.local
                 })
                 syncedCount++

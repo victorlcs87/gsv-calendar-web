@@ -65,6 +65,14 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                             </div>
                         </div>
 
+                        {/* Operação (Extraído de Observações) */}
+                        {scale.observacoes?.match(/Operação: (.*?)(?:\n|$)/) && (
+                            <div className="flex items-center gap-2 mt-3 text-sm font-medium text-amber-600 bg-amber-50 p-2 rounded-md border border-amber-100 dark:bg-amber-950/30 dark:border-amber-900">
+                                <span className="font-bold">Operação:</span>
+                                <span className="truncate">{scale.observacoes.match(/Operação: (.*?)(?:\n|$)/)?.[1]}</span>
+                            </div>
+                        )}
+
                         {/* Valores */}
                         <div className="flex items-center justify-between border-t pt-3">
                             <div>
