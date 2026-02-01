@@ -114,6 +114,10 @@ export function ScaleFormModal({
             toast.error('Informe o local')
             return
         }
+        if (!operacao.trim()) {
+            toast.error('Informe a operação')
+            return
+        }
         const horaInicioNum = parseInt(horaInicio)
         const horaFimNum = parseInt(horaFim)
         if (isNaN(horaInicioNum) || horaInicioNum < 0 || horaInicioNum > 23) {
@@ -270,7 +274,7 @@ export function ScaleFormModal({
 
                     {/* Operação */}
                     <div className="space-y-2">
-                        <Label htmlFor="operacao">Operação (Opcional)</Label>
+                        <Label htmlFor="operacao">Operação</Label>
                         <Input
                             id="operacao"
                             value={operacao}
