@@ -2,127 +2,203 @@
 
 import { useMemo } from 'react'
 import {
-    PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
-    BarChart, Bar, XAxis, YAxis, CartesianGrid,
-    AreaChart, Area
+    AreaChart, Area,
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Scale } from '@/types'
-import { format, parseISO, startOfMonth } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-
-// Colors from globals.css
-const COLORS = [
-    'oklch(0.45 0.2 25)', // Primary (Red)
-    'oklch(0.65 0.18 45)', // Secondary (Orange)
-    'oklch(0.55 0.15 35)', // Chart 3
-    'oklch(0.75 0.12 55)', // Chart 4
-]
 
 interface ChartsProps {
     scales: Scale[]
 }
 
-/**
- * Gráfico de Pizza: Distribuição por Tipo de Escala
- */
-export function ScaleTypeChart({ scales }: ChartsProps) {
-    const data = useMemo(() => {
-        const counts = scales.reduce((acc, scale) => {
-            acc[scale.tipo] = (acc[scale.tipo] || 0) + 1
-            return acc
-        }, {} as Record<string, number>)
+// Helper para formatar moeda
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(value)
+}
 
-        return Object.entries(counts).map(([name, value]) => ({ name, value }))
+/**
+ * Componente Visual de Ranking (Barra de Progresso)
+ */
+const RankingItem = ({
+    rank,
+    label,
+    subLabel,
+    valueDisplay,
+    valueSubDisplay,
+    percentage,
+    colorClass,
+    bgClass
+}: {
+    rank: number
+    label: string
+    subLabel: string
+    valueDisplay: string
+    valueSubDisplay: string
+    percentage: number
+    colorClass: string
+    bgClass: string
+}) => (
+    <div className="mb-4 last:mb-0">
+        <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div className={`flex h-8 w-8 items-center justify-center rounded-full font-bold text-white ${colorClass}`}>
+                    {rank}
+                </div>
+                <div>
+                    <h4 className="text-sm font-semibold">{label}</h4>
+                    <p className="text-xs text-muted-foreground">{subLabel}</p>
+                </div>
+            </div>
+            <div className="text-right">
+                <p className="text-sm font-bold">{valueDisplay}</p>
+                <p className="text-xs text-muted-foreground">{valueSubDisplay}</p>
+            </div>
+        </div>
+        {/* Progress Bar Background */}
+        <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/10">
+            {/* Progress Bar Fill */}
+            <div
+                className={`h-full rounded-full ${bgClass}`}
+                style={{ width: `${Math.min(percentage, 100)}%` }}
+            />
+        </div>
+    </div>
+)
+
+/**
+ * Lista: Distribuição por Tipo de Serviço
+ * Mostra ranking por horas trabalhadas
+ */
+export function ServiceTypeRanking({ scales }: ChartsProps) {
+    const data = useMemo(() => {
+        const grouped = scales.reduce((acc, scale) => {
+            const key = scale.tipo
+            if (!acc[key]) acc[key] = { count: 0, hours: 0 }
+            acc[key].count += 1
+            acc[key].hours += scale.horas
+            return acc
+        }, {} as Record<string, { count: number, hours: number }>)
+
+        const sorted = Object.entries(grouped)
+            .map(([name, stats]) => ({ name, ...stats }))
+            .sort((a, b) => b.hours - a.hours)
+
+        const totalHours = sorted.reduce((acc, item) => acc + item.hours, 0)
+        const maxHours = sorted.length > 0 ? sorted[0].hours : 0
+
+        return { items: sorted, totalHours, maxHours }
     }, [scales])
 
     if (scales.length === 0) return null
 
     return (
-        <Card>
+        <Card className="h-fit">
             <CardHeader>
-                <CardTitle className="text-sm font-medium">Distribuição por Tipo</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-base">
+                    <span className="text-orange-500">🏷️</span>
+                    Distribuição por Tipo de Serviço
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                    Quantidade e horas trabalhadas por categoria
+                </p>
             </CardHeader>
             <CardContent>
-                <div className="h-[250px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={data}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
-                                paddingAngle={5}
-                                dataKey="value"
-                            >
-                                {data.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip
-                                formatter={(value: number) => [`${value} escalas`, 'Quantidade']}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                            />
-                            <Legend verticalAlign="bottom" height={36} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
+                {data.items.map((item, index) => {
+                    const percentOfTotal = data.totalHours > 0 ? (item.hours / data.totalHours) * 100 : 0
+                    const percentOfMax = data.maxHours > 0 ? (item.hours / data.maxHours) * 100 : 0
+
+                    return (
+                        <RankingItem
+                            key={item.name}
+                            rank={index + 1}
+                            label={item.name}
+                            subLabel={`${item.count} serviço${item.count !== 1 ? 's' : ''} • ${percentOfTotal.toFixed(1)}%`}
+                            valueDisplay={`${item.hours}h`}
+                            valueSubDisplay="trabalhadas"
+                            percentage={percentOfMax}
+                            colorClass="bg-orange-500"
+                            bgClass="bg-orange-500"
+                        />
+                    )
+                })}
             </CardContent>
         </Card>
     )
 }
 
 /**
- * Gráfico de Barras: Horas por Mês (ou Dia se for poucos dias) -> Vamos fazer por Mês para simplificar
- * Melhora: Se o range for curto, agrupar por dia? Vamos manter simples: Horas por Escala (Cronológico)
+ * Lista: Distribuição por Local
+ * Mostra ranking por valor recebido (R$)
  */
-export function HoursEvolutionChart({ scales }: ChartsProps) {
+export function LocationRanking({ scales }: ChartsProps) {
     const data = useMemo(() => {
-        // Sort cronologicamente e pegar apenas data e horas
-        return [...scales]
-            .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
-            .map(scale => ({
-                date: format(parseISO(scale.data), 'dd/MM'),
-                horas: scale.horas,
-                local: scale.local
-            }))
-            // Limitar para não poluir se tiver muitas
-            .slice(-20)
+        const grouped = scales.reduce((acc, scale) => {
+            const key = scale.local
+            if (!acc[key]) acc[key] = { count: 0, value: 0 }
+            acc[key].count += 1
+            acc[key].value += scale.valorLiquido
+            return acc
+        }, {} as Record<string, { count: number, value: number }>)
+
+        const sorted = Object.entries(grouped)
+            .map(([name, stats]) => ({ name, ...stats }))
+            .sort((a, b) => b.value - a.value)
+
+        const totalValue = sorted.reduce((acc, item) => acc + item.value, 0)
+        const maxValue = sorted.length > 0 ? sorted[0].value : 0
+
+        return { items: sorted, totalValue, maxValue }
     }, [scales])
 
     if (scales.length === 0) return null
 
     return (
-        <Card>
+        <Card className="h-fit">
             <CardHeader>
-                <CardTitle className="text-sm font-medium">Últimas Escalas (Horas)</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-base">
+                    <span className="text-emerald-500">📍</span>
+                    Distribuição por Local
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                    Serviços e valores recebidos por localidade
+                </p>
             </CardHeader>
             <CardContent>
-                <div className="h-[250px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                            <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={10}
-                                fontSize={12}
-                            />
-                            <Tooltip
-                                cursor={{ fill: 'transparent' }}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                            />
-                            <Bar
-                                dataKey="horas"
-                                fill="oklch(0.65 0.18 45)"
-                                radius={[4, 4, 0, 0]}
-                                name="Horas"
-                            />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
+                {data.items.map((item, index) => {
+                    const percentOfMax = data.maxValue > 0 ? (item.value / data.maxValue) * 100 : 0
+
+                    // Cálculo de porcentagem de "frequência" (serviços) ou valor?
+                    // Imagem mostra "3 serviços • 60.0%". Parece % de serviços? Ou % do total de valor?
+                    // Texto diz "60.0%". Serviços: 3.
+                    // Rio: 1 serviço • 20.0%.
+                    // Soma services: 3+1+1=5. 3/5 = 60%. Ok, é % de COUNT.
+                    // Vou calcular percentage of Count para o label.
+                    // Para o Value Display (R$), mantenho o valor.
+
+                    // Recalcular totalCount
+                    const totalCount = data.items.reduce((acc, i) => acc + i.count, 0)
+                    const percentOfCount = totalCount > 0 ? (item.count / totalCount) * 100 : 0
+
+                    return (
+                        <RankingItem
+                            key={item.name}
+                            rank={index + 1}
+                            label={item.name}
+                            subLabel={`${item.count} serviço${item.count !== 1 ? 's' : ''} • ${percentOfCount.toFixed(1)}%`}
+                            valueDisplay={formatCurrency(item.value)}
+                            valueSubDisplay="recebidos"
+                            percentage={percentOfMax} // Barra baseada no valor monetário, provavelmente? Imagem tem barra cheia para o top 1. Sim, relativo ao máximo.
+                            colorClass="bg-emerald-500"
+                            bgClass="bg-emerald-500"
+                        />
+                    )
+                })}
             </CardContent>
         </Card>
     )
@@ -135,7 +211,7 @@ export function EarningsChart({ scales }: ChartsProps) {
     const data = useMemo(() => {
         const sorted = [...scales].sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
 
-        // Agrupar por mês para ficar mais bonito line chart
+        // Agrupar por mês
         const monthlyData = sorted.reduce((acc, scale) => {
             const monthKey = format(parseISO(scale.data), 'MMM/yyyy', { locale: ptBR })
             if (!acc[monthKey]) acc[monthKey] = 0
@@ -177,7 +253,7 @@ export function EarningsChart({ scales }: ChartsProps) {
                                 hide
                             />
                             <Tooltip
-                                formatter={(value: number) => [`R$ ${value.toFixed(2)}`, 'Valor Líquido']}
+                                formatter={(value: number | undefined) => [value ? `R$ ${value ? value.toFixed(2) : '0.00'}` : 'R$ 0,00', 'Valor Líquido']}
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                             />
                             <Area
