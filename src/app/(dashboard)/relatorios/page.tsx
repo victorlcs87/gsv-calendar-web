@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/layout'
 import type { MonthlyReport } from '@/types'
 import { useScales } from '@/hooks/useScales'
+import { ScaleTypeChart, HoursEvolutionChart, EarningsChart } from '@/components/reports/charts'
 
 /**
  * Página de Relatórios
@@ -23,17 +24,9 @@ export default function RelatoriosPage() {
         to: new Date()
     })
 
-    // Calcular relatório do período selecionado
-    const currentReport = useMemo((): MonthlyReport => {
-        if (!dateRange?.from) return {
-            mes: 'Período Inválido',
-            totalEscalas: 0,
-            totalHoras: 0,
-            valorBrutoTotal: 0,
-            valorLiquidoTotal: 0,
-            escalasOrdinarias: 0,
-            escalasExtras: 0,
-        }
+    // Filtrar escalas pelo período selecionado
+    const periodScales = useMemo(() => {
+        if (!dateRange?.from) return []
 
         const start = dateRange.from
         const end = dateRange.to ? new Date(dateRange.to) : new Date(start)
@@ -42,15 +35,18 @@ export default function RelatoriosPage() {
 
         const interval = { start, end }
 
-        const periodScales = scales.filter((scale) => {
+        return scales.filter((scale) => {
             if (!scale.data) return false
             try {
                 return isWithinInterval(parseISO(scale.data), interval)
             } catch { return false }
         })
+    }, [dateRange, scales])
 
+    // Calcular relatório do período selecionado
+    const currentReport = useMemo((): MonthlyReport => {
         return {
-            mes: 'Período Atual', // Usado apenas internamente ou display genérico
+            mes: 'Período Atual',
             totalEscalas: periodScales.length,
             totalHoras: periodScales.reduce((acc, s) => acc + s.horas, 0),
             valorBrutoTotal: periodScales.reduce((acc, s) => acc + s.valorBruto, 0),
@@ -58,7 +54,7 @@ export default function RelatoriosPage() {
             escalasOrdinarias: periodScales.filter((s) => s.tipo === 'Ordinária').length,
             escalasExtras: periodScales.filter((s) => s.tipo === 'Extra').length,
         }
-    }, [dateRange, scales])
+    }, [periodScales])
 
     // Calcular relatório do período anterior para comparação
     const previousReport = useMemo((): MonthlyReport => {
@@ -193,34 +189,12 @@ export default function RelatoriosPage() {
                 </Card>
             </div>
 
-            {/* Resumo por Tipo */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Distribuição por Tipo</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="flex items-center justify-between rounded-lg border p-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Escalas Ordinárias</p>
-                                <p className="text-2xl font-bold">{currentReport.escalasOrdinarias}</p>
-                            </div>
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                                <div className="h-4 w-4 rounded-full bg-primary" />
-                            </div>
-                        </div>
-                        <div className="flex items-center justify-between rounded-lg border p-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Escalas Extras</p>
-                                <p className="text-2xl font-bold">{currentReport.escalasExtras}</p>
-                            </div>
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/10">
-                                <div className="h-4 w-4 rounded-full bg-secondary" />
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+            {/* Gráficos */}
+            <div className="grid gap-4 md:grid-cols-2">
+                <ScaleTypeChart scales={periodScales} />
+                <HoursEvolutionChart scales={periodScales} />
+                <EarningsChart scales={periodScales} />
+            </div>
         </div>
     )
 }
