@@ -80,7 +80,7 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                         <div className="flex items-center justify-between border-t pt-3">
                             <div>
                                 <p className="text-xs text-muted-foreground">Valor Líquido</p>
-                                <p className="text-lg font-bold text-primary">
+                                <p className="text-lg font-bold text-green-600">
                                     R$ {scale.valorLiquido.toFixed(2)}
                                 </p>
                             </div>

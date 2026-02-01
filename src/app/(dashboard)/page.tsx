@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Plus, Upload, Filter, CalendarDays, Loader2, Download, Clock, DollarSign } from 'lucide-react'
+import { Plus, Upload, Filter, CalendarDays, Loader2, Download, Clock, DollarSign, BarChart3 } from 'lucide-react'
 import { DateRange } from "react-day-picker" // Import DateRange type
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -176,7 +176,7 @@ export default function EscalasPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Total de Escalas</CardTitle>
-                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{totals.totalEscalas}</div>
@@ -212,14 +212,14 @@ export default function EscalasPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-primary/50 bg-gradient-to-br from-primary/10 to-transparent">
+                <Card className="border-green-500/50 bg-gradient-to-br from-green-500/10 to-transparent">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Valor Líquido</CardTitle>
-                        <DollarSign className="h-4 w-4 text-primary" />
+                        <DollarSign className="h-4 w-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-primary">R$ {totals.totalLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                        <p className="text-xs text-primary/80">
+                        <div className="text-2xl font-bold text-green-600">R$ {totals.totalLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                        <p className="text-xs text-green-600/80">
                             Valor estimado a receber
                         </p>
                     </CardContent>
