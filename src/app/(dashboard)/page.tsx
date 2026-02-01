@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { ScaleCard, ScaleFormModal, CsvImportDialog } from '@/components/scales'
 import { SyncButton } from '@/components/calendar'
-import { ThemeToggle } from '@/components/layout'
 import type { Scale, TipoEscala, ScaleFilters } from '@/types'
 import { useScales } from '@/hooks/useScales'
 import { useScaleMutations } from '@/hooks/useScaleMutations'
@@ -152,8 +151,7 @@ export default function EscalasPage() {
                         )}
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <ThemeToggle />
+                <div className="flex flex-wrap items-center gap-2">
                     <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredScales.length === 0}>
                         <Download className="mr-2 h-4 w-4" />
                         Exportar
@@ -212,7 +210,7 @@ export default function EscalasPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-green-500/50 bg-gradient-to-br from-green-500/10 to-transparent">
+                <Card className="border-primary/50 bg-gradient-to-br from-primary/10 to-transparent">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Valor Líquido</CardTitle>
                         <DollarSign className="h-4 w-4 text-green-600" />

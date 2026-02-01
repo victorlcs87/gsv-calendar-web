@@ -23,6 +23,11 @@ export const metadata: Metadata = {
     description: 'Gestão de escalas de trabalho CBMDF',
     type: 'website',
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'GSV Calendar',
+  },
 }
 
 export default function RootLayout({

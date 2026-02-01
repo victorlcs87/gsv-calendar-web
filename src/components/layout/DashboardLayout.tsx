@@ -1,5 +1,7 @@
 'use client'
 
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -53,14 +55,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     />
                     <span className="text-xl font-bold text-primary">GSV</span>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    aria-label="Toggle menu"
-                >
-                    {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                    </Button>
+                </div>
             </header>
 
             {/* Mobile Menu Overlay */}
@@ -118,7 +123,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </nav>
 
                 {/* Logout */}
-                <div className="absolute bottom-0 left-0 right-0 border-t p-4">
+                <div className="absolute bottom-0 left-0 right-0 border-t p-4 flex flex-col gap-2">
+                    <div className="flex items-center justify-between px-2">
+                        <span className="text-sm font-medium text-muted-foreground">Tema</span>
+                        <ThemeToggle />
+                    </div>
                     <Button
                         variant="ghost"
                         className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive"

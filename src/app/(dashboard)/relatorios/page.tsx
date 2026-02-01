@@ -8,7 +8,6 @@ import { ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown, Clock, D
 import { Button } from '@/components/ui/button'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ThemeToggle } from '@/components/layout'
 import type { MonthlyReport } from '@/types'
 import { useScales } from '@/hooks/useScales'
 import { OperationRanking, LocationRanking, EarningsChart } from '@/components/reports/charts'
@@ -111,7 +110,6 @@ export default function RelatoriosPage() {
                     <p className="text-muted-foreground">Acompanhe suas estatísticas</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <ThemeToggle />
                 </div>
             </div>
 
@@ -179,7 +177,7 @@ export default function RelatoriosPage() {
                         )}
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-primary">
+                        <div className="text-3xl font-bold text-green-600">
                             R$ {currentReport.valorLiquidoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </div>
                         <p className={`text-xs ${valorDiff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
