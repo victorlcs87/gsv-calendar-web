@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Flame, Loader2 } from 'lucide-react'
+import Image from 'next/image'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -60,8 +61,15 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-accent to-background p-4">
             <Card className="w-full max-w-md border-0 shadow-2xl">
                 <CardHeader className="space-y-4 text-center">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg">
-                        <Flame className="h-9 w-9 text-white" />
+                    <div className="mx-auto flex h-24 w-24 items-center justify-center">
+                        <Image
+                            src="/gsv-logo.png"
+                            alt="GSV Logo"
+                            width={96}
+                            height={96}
+                            className="object-contain" // Garante que o logo não distorça
+                            priority
+                        />
                     </div>
                     <div>
                         <CardTitle className="text-2xl font-bold text-primary">GSV Calendar</CardTitle>
