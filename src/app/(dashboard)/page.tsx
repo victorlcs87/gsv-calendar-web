@@ -3,11 +3,12 @@
 import { useState, useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Plus, Upload, Filter, CalendarDays, Loader2, Download } from 'lucide-react'
+import { Plus, Upload, Filter, CalendarDays, Loader2, Download, Clock, DollarSign } from 'lucide-react'
 import { DateRange } from "react-day-picker" // Import DateRange type
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { ScaleCard, ScaleFormModal, CsvImportDialog } from '@/components/scales'
 import { SyncButton } from '@/components/calendar'
@@ -71,7 +72,7 @@ export default function EscalasPage() {
                 if (!isWithinInterval(scaleDate, interval)) {
                     return false
                 }
-            } catch (e) {
+            } catch {
                 return false
             }
 
@@ -170,23 +171,59 @@ export default function EscalasPage() {
             </div>
 
             {/* Totais do Mês */}
+            {/* Totais do Mês */}
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                <div className="rounded-lg border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Escalas</p>
-                    <p className="text-2xl font-bold">{totals.totalEscalas}</p>
-                </div>
-                <div className="rounded-lg border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Horas</p>
-                    <p className="text-2xl font-bold">{totals.totalHoras}h</p>
-                </div>
-                <div className="rounded-lg border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Valor Bruto</p>
-                    <p className="text-2xl font-bold">R$ {totals.totalBruto.toFixed(2)}</p>
-                </div>
-                <div className="rounded-lg border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Valor Líquido</p>
-                    <p className="text-2xl font-bold text-primary">R$ {totals.totalLiquido.toFixed(2)}</p>
-                </div>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Total de Escalas</CardTitle>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{totals.totalEscalas}</div>
+                        <p className="text-xs text-muted-foreground">
+                            No período selecionado
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Total de Horas</CardTitle>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{totals.totalHoras}h</div>
+                        <p className="text-xs text-muted-foreground">
+                            Carga horária total
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Valor Bruto</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">R$ {totals.totalBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                        <p className="text-xs text-muted-foreground">
+                            Antes dos descontos
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-primary/50 bg-gradient-to-br from-primary/10 to-transparent">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Valor Líquido</CardTitle>
+                        <DollarSign className="h-4 w-4 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-primary">R$ {totals.totalLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                        <p className="text-xs text-primary/80">
+                            Valor estimado a receber
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Filtros */}

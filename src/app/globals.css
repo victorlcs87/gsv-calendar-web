@@ -126,7 +126,8 @@
 
   body {
     @apply text-foreground;
-    background: linear-gradient(to bottom, oklch(0.99 0 0), oklch(0.96 0 0));
+    /* Aumentando contraste do fundo (White -> Light Gray) */
+    background: linear-gradient(to bottom, oklch(1 0 0), oklch(0.92 0 0));
     min-height: 100vh;
   }
 }
