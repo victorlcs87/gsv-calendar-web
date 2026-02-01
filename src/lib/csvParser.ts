@@ -136,23 +136,18 @@ export function parseCsvFile(file: File): Promise<CsvParseResult> {
                     const rowNum = index + 2 // +1 para 1-indexed, +1 para header
 
                     // 1. Tentar mapear campos Sigmanet vs Manual
-                    let dataRaw = row.Data || row.data || row.datIniVagas || ''
-                    let localRaw = row.Local || row.local || row.nomLocalServico || ''
+                    const dataRaw = row.Data || row.data || row.datIniVagas || ''
+                    const localRaw = row.Local || row.local || row.nomLocalServico || ''
                     // Tipo e Horas dependem do formato
-                    // Tipo e Horas dependem do formato
-                    let tipoRaw = row.Tipo || row.tipo
+                    const tipoRaw = row.Tipo || row.tipo
 
                     // Lógica de Observação e Operação (nomGrupoServico)
-                    let obsManual = row.Observacoes || row.observacoes || ''
-                    let operacao = row.nomGrupoServico || ''
-                    let obsRaw = ''
+                    const obsManual = row.Observacoes || row.observacoes || ''
+                    const operacao = row.nomGrupoServico || ''
 
-                    if (operacao) {
-                        obsRaw = `Operação: ${operacao}`
-                        if (obsManual) obsRaw += `\n${obsManual}`
-                    } else {
-                        obsRaw = obsManual
-                    }
+                    const obsRaw = operacao
+                        ? `Operação: ${operacao}${obsManual ? `\n${obsManual}` : ''}`
+                        : obsManual
 
                     // 2. Processar Horários
                     let horaInicio: number | null = null

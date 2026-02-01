@@ -70,6 +70,7 @@ export function ScaleFormModal({
     useEffect(() => {
         if (scale) {
             // FIX: Usar parser local para evitar shift de timezone
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             setData(parseLocalDate(scale.data))
             setTipo(scale.tipo)
             setLocal(scale.local)

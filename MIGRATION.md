@@ -66,10 +66,11 @@ O objetivo é garantir paridade de recursos com o projeto mobile original (`gsv-
 - [ ] OAuth com Google (NextAuth ou Supabase Auth Provider)
 - [ ] Sincronização Bidirecional ou Unidirecional (Push para GCal)
 
-### Fase 7: Deploy e CI/CD (Pendente ⏳)
-- [ ] Configuração do Vercel
-- [ ] Variáveis de Ambiente de Produção
-- [ ] Pipeline de verificação (Lint/Build no PR)
+### Fase 7: Deploy e CI/CD (Pronta para Execução 🚀)
+- [x] Configuração de Headers de Segurança (Next.config)
+- [x] Variáveis de Ambiente de Produção (Exemplo criado)
+- [x] Pipeline de verificação (Lint/Build no GitHub Actions)
+- [x] Script de Guia de Deploy (`scripts/deploy-guide.sh`)
 
 ### Fase 8: Auditoria e Polimento Final (Concluída ✅)
 - [x] Criação de Prompt de Auditoria (`PROMPT_AUDIT.md`)
