@@ -72,13 +72,16 @@ const RankingItem = ({
 )
 
 /**
- * Lista: Distribuição por Tipo de Serviço
- * Mostra ranking por horas trabalhadas
+ * Lista: Distribuição por Operação
+ * Mostra ranking por horas trabalhadas em cada operação
  */
-export function ServiceTypeRanking({ scales }: ChartsProps) {
+export function OperationRanking({ scales }: ChartsProps) {
     const data = useMemo(() => {
         const grouped = scales.reduce((acc, scale) => {
-            const key = scale.tipo
+            // Extrair operação das observações ou usar 'Geral'
+            const opMatch = scale.observacoes?.match(/Operação: (.*?)(?:\n|$)/)
+            const key = opMatch ? opMatch[1] : 'Operação Padrão'
+
             if (!acc[key]) acc[key] = { count: 0, hours: 0 }
             acc[key].count += 1
             acc[key].hours += scale.horas
@@ -101,11 +104,11 @@ export function ServiceTypeRanking({ scales }: ChartsProps) {
         <Card className="h-fit">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                    <span className="text-orange-500">🏷️</span>
-                    Distribuição por Tipo de Serviço
+                    <span className="text-orange-500">🚒</span>
+                    Distribuição por Operação
                 </CardTitle>
                 <p className="text-xs text-muted-foreground">
-                    Quantidade e horas trabalhadas por categoria
+                    Horas dedicadas por tipo de operação
                 </p>
             </CardHeader>
             <CardContent>
@@ -118,7 +121,7 @@ export function ServiceTypeRanking({ scales }: ChartsProps) {
                             key={item.name}
                             rank={index + 1}
                             label={item.name}
-                            subLabel={`${item.count} serviço${item.count !== 1 ? 's' : ''} • ${percentOfTotal.toFixed(1)}%`}
+                            subLabel={`${item.count} escala${item.count !== 1 ? 's' : ''} • ${percentOfTotal.toFixed(1)}%`}
                             valueDisplay={`${item.hours}h`}
                             valueSubDisplay="trabalhadas"
                             percentage={percentOfMax}

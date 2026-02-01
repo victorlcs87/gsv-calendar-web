@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/layout'
 import type { MonthlyReport } from '@/types'
 import { useScales } from '@/hooks/useScales'
-import { ServiceTypeRanking, LocationRanking, EarningsChart } from '@/components/reports/charts'
+import { OperationRanking, LocationRanking, EarningsChart } from '@/components/reports/charts'
 
 /**
  * Página de Relatórios
@@ -191,7 +191,7 @@ export default function RelatoriosPage() {
 
             {/* Gráficos */}
             <div className="grid gap-4 lg:grid-cols-2">
-                <ServiceTypeRanking scales={periodScales} />
+                <OperationRanking scales={periodScales} />
                 <LocationRanking scales={periodScales} />
                 <EarningsChart scales={periodScales} />
             </div>
