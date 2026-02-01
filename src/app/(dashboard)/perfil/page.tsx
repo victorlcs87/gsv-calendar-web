@@ -7,10 +7,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { ThemeToggle } from '@/components/layout'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import type { User as UserType } from '@supabase/supabase-js'
+import { useScaleMutations } from '@/hooks/useScaleMutations'
 
 /**
  * Página de Perfil do Usuário
@@ -21,6 +32,16 @@ export default function PerfilPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const [nome, setNome] = useState('')
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+    const { deleteAllScales } = useScaleMutations()
+
+    const handleDeleteAll = async () => {
+        const success = await deleteAllScales()
+        if (success) {
+            setShowDeleteConfirm(false)
+        }
+    }
 
     useEffect(() => {
         async function loadUser() {
@@ -176,6 +197,55 @@ export default function PerfilPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Zona de Perigo */}
+            <Card className="border-destructive/50">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-destructive">
+                        <Shield className="h-5 w-5" />
+                        Zona de Perigo
+                    </CardTitle>
+                    <CardDescription>
+                        Ações irreversíveis para sua conta
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+                        <div>
+                            <p className="font-medium text-destructive">Limpar todas as escalas</p>
+                            <p className="text-sm text-muted-foreground">
+                                Remove permanentemente todas as suas escalas cadastradas.
+                            </p>
+                        </div>
+                        <Button
+                            variant="destructive"
+                            onClick={() => setShowDeleteConfirm(true)}
+                        >
+                            Limpar Dados
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Essa ação não pode ser desfeita. Isso excluirá permanentemente todas as suas escalas do banco de dados.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteAll}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Sim, excluir tudo
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

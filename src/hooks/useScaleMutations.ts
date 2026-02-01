@@ -105,10 +105,39 @@ export function useScaleMutations(onSuccess?: () => void) {
         }
     }
 
+    const deleteAllScales = async () => {
+        setIsSubmitting(true)
+        try {
+            const supabase = createClient()
+
+            // Obter usuário atual para segurança extra (embora RLS deva proteger)
+            const { data: { user }, error: authError } = await supabase.auth.getUser()
+            if (authError || !user) throw new Error('Usuário não autenticado')
+
+            const { error } = await supabase
+                .from('scales')
+                .delete()
+                .eq('user_id', user.id)
+
+            if (error) throw error
+
+            toast.success('Todas as escalas foram removidas!')
+            onSuccess?.()
+            return true
+        } catch (error) {
+            console.error('Erro ao limpar escalas:', error)
+            toast.error('Erro ao limpar escalas')
+            return false
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
     return {
         createScale,
         updateScale,
         deleteScale,
+        deleteAllScales,
         isSubmitting
     }
 }

@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Calendar, FileText, User, LogOut, Menu, X, Flame } from 'lucide-react'
+import { Calendar, FileText, User, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
@@ -43,7 +44,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* Header Mobile */}
             <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-card px-4 lg:hidden">
                 <div className="flex items-center gap-2">
-                    <Flame className="h-7 w-7 text-primary" />
+                    <Image
+                        src="/gsv-logo.png"
+                        alt="GSV"
+                        width={32}
+                        height={32}
+                        className="object-contain"
+                    />
                     <span className="text-xl font-bold text-primary">GSV</span>
                 </div>
                 <Button
@@ -73,9 +80,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             >
                 {/* Logo */}
                 <div className="flex h-16 items-center gap-3 border-b px-6">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-secondary">
-                        <Flame className="h-6 w-6 text-white" />
-                    </div>
+                    <Image
+                        src="/gsv-logo.png"
+                        alt="GSV Logo"
+                        width={56}
+                        height={48}
+                        className="object-contain"
+                    />
                     <div>
                         <h1 className="text-lg font-bold text-primary">GSV Calendar</h1>
                         <p className="text-xs text-muted-foreground">CBMDF</p>

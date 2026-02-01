@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths, addMonths } from 'date-fns'
+import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths, addMonths, startOfYear } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { DateRange } from "react-day-picker"
 import { ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown, Clock, DollarSign, Loader2 } from 'lucide-react'
@@ -19,8 +19,8 @@ import { useScales } from '@/hooks/useScales'
 export default function RelatoriosPage() {
     const { scales, isLoading } = useScales()
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
-        from: startOfMonth(new Date()),
-        to: endOfMonth(new Date())
+        from: startOfYear(new Date()),
+        to: new Date()
     })
 
     // Calcular relatório do período selecionado
@@ -116,10 +116,6 @@ export default function RelatoriosPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <ThemeToggle />
-                    <Button variant="outline" size="sm">
-                        <Download className="mr-2 h-4 w-4" />
-                        Exportar CSV
-                    </Button>
                 </div>
             </div>
 
