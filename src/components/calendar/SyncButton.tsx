@@ -123,13 +123,25 @@ export function SyncButton({ scales }: SyncButtonProps) {
                     endIso = addDays(endIso, 1)
                 }
 
-                // Extrair Operação para descrição
+                // Extrair Operação para o título (Subject)
                 const operacaoMatch = scale.observacoes?.match(/Operação: (.*?)(?:\n|$)/)
                 const operacao = operacaoMatch ? operacaoMatch[1] : ''
-                const description = operacao ? `GSV - ${operacao}` : (scale.observacoes || 'Sem observações')
+                const summary = operacao ? `GSV - ${operacao}` : `GSV - ${scale.local}`
+
+                // Montar descrição com valores
+                const valorBruto = scale.valorBruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                const valorLiquido = scale.valorLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+
+                const descriptionLines = [
+                    `Valor Bruto: ${valorBruto}`,
+                    `Valor Líquido: ${valorLiquido}`,
+                    '',
+                    scale.observacoes || ''
+                ]
+                const description = descriptionLines.join('\n').trim()
 
                 await insertEvent(token, targetCalendarId, {
-                    summary: `Escala ${scale.tipo} - ${scale.local}`,
+                    summary: summary,
                     description: description,
                     start: { dateTime: format(startIso, "yyyy-MM-dd'T'HH:mm:ss"), timeZone: 'America/Sao_Paulo' },
                     end: { dateTime: format(endIso, "yyyy-MM-dd'T'HH:mm:ss"), timeZone: 'America/Sao_Paulo' },

@@ -46,6 +46,11 @@ O objetivo é garantir paridade de recursos com o projeto mobile original (`gsv-
 - [x] **Filtros Avançados**: Filtragem combinada por Tipo (Ordinária/Extra) e Local.
 - [x] **Deduplicação Inteligente**: Ignora escalas duplicadas na importação.
     - *Correção*: Sincronização de estado consertada para permitir reimportação após exclusão.
+- [x] **Refinamentos de Operação (Pós-MVP)**:
+    - [x] **Campo "Operação"**: Input dedicado no formulário (Label + Parser Automático).
+    - [x] **Display**: Badge de Operação destacado no Card da Escala.
+    - [x] **Lógica de Pernoite**: Formulário aceita hora fim < inicio como "virada de dia".
+    - [x] **Analytics**: Novo gráfico "Ranking por Operação" substituindo o ranking genérico por Tipo.
 
 ### Fase 6: Integração de Calendário (Concluída ✅)
 - [x] **Configuração GCP**: Credenciais OAuth criadas e configuradas.

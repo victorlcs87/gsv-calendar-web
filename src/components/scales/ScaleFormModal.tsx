@@ -63,6 +63,7 @@ export function ScaleFormModal({
     const [horaInicio, setHoraInicio] = useState('')
     const [horaFim, setHoraFim] = useState('')
     const [observacoes, setObservacoes] = useState('')
+    const [operacao, setOperacao] = useState('')
     const [calendarOpen, setCalendarOpen] = useState(false)
 
     // Preencher formulário ao editar
@@ -74,10 +75,20 @@ export function ScaleFormModal({
             setLocal(scale.local)
             setHoraInicio(String(scale.horaInicio))
             setHoraFim(String(scale.horaFim))
-            setObservacoes(scale.observacoes || '')
+
+            // Extrair Operação das observações
+            const obs = scale.observacoes || ''
+            const opMatch = obs.match(/Operação: (.*?)(?:\n|$)/)
+            if (opMatch) {
+                setOperacao(opMatch[1])
+                // Remove a linha da operação para não duplicar visualmente
+                setObservacoes(obs.replace(opMatch[0], '').trim())
+            } else {
+                setOperacao('')
+                setObservacoes(obs)
+            }
         } else if (open) { // Apenas resetar se estiver abrindo
             // Reset para criação
-            // Manter undefined se for nova criação 'pura' ou aceitar default se necessário
             if (!scale) {
                 setData(undefined)
                 setTipo('Ordinária')
@@ -85,6 +96,7 @@ export function ScaleFormModal({
                 setHoraInicio('')
                 setHoraFim('')
                 setObservacoes('')
+                setOperacao('')
             }
         }
     }, [scale, open])
@@ -112,6 +124,11 @@ export function ScaleFormModal({
             return
         }
 
+        let finalObs = observacoes.trim()
+        if (operacao.trim()) {
+            finalObs = `Operação: ${operacao.trim()}\n${finalObs}`.trim()
+        }
+
         const input: ScaleInput = {
             // FIX: Usar formatador local
             data: formatLocalDate(data),
@@ -119,7 +136,7 @@ export function ScaleFormModal({
             local: local.trim(),
             horaInicio: horaInicioNum,
             horaFim: horaFimNum,
-            observacoes: observacoes.trim() || undefined,
+            observacoes: finalObs || undefined,
         }
 
         let success: boolean
@@ -248,6 +265,17 @@ export function ScaleFormModal({
                                 <SelectItem value="Extra">Extra</SelectItem>
                             </SelectContent>
                         </Select>
+                    </div>
+
+                    {/* Operação */}
+                    <div className="space-y-2">
+                        <Label htmlFor="operacao">Operação (Opcional)</Label>
+                        <Input
+                            id="operacao"
+                            value={operacao}
+                            onChange={(e) => setOperacao(e.target.value)}
+                            placeholder="Ex: Operação Verão, Carnaval..."
+                        />
                     </div>
 
                     {/* Local */}

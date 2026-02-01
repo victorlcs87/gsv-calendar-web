@@ -60,12 +60,13 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                         </div>
 
                         {/* Info Grid */}
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div className="flex items-center gap-2 text-muted-foreground">
+                        {/* Info Grid */}
+                        <div className="flex flex-row justify-between items-center gap-2 text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground min-w-0">
                                 <MapPin className="h-4 w-4 shrink-0" />
                                 <span className="truncate">{scale.local}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-muted-foreground">
+                            <div className="flex items-center gap-2 text-muted-foreground shrink-0">
                                 <Clock className="h-4 w-4 shrink-0" />
                                 <span>
                                     {scale.horaInicio}h - {scale.horaFim}h ({scale.horas}h)
