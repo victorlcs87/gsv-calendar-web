@@ -46,6 +46,8 @@ export const metadata: Metadata = {
   manifest: '/manifest.json?v=2',
 }
 
+import { UpdatePrompt } from '@/components/layout/UpdatePrompt'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -55,6 +57,7 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         {children}
+        <UpdatePrompt />
         <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
