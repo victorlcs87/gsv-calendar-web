@@ -155,6 +155,7 @@ export function ScaleFormModal({
         if (success) {
             onOpenChange(false)
         }
+        // Se falhar (ex: duplicata no Google), o modal permanece aberto e o toast explica o erro.
     }
 
     // Gerar opções de hora (0-23)

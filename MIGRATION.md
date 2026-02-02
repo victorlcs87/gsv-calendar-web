@@ -98,6 +98,9 @@ O objetivo é garantir paridade de recursos com o projeto mobile original (`gsv-
 O projeto está estável, com pipeline de deploy automático corrigido e experiência PWA otimizada para iOS.
 
 ### O que falta / Próximos Passos (Backlog Futuro):
-1.  **Monitoramento**: Acompanhar logs do Vercel/Supabase para eventuais erros em produção.
-2.  **Testes E2E**: Implementar Cypress ou Playwright para testes automatizados de fluxo crítico.
-3.  **Sync Bidirecional**: Ouvir webhook do Google Calendar para atualizar escalas se o evento for deletado lá (Opcional).
+
+### Fase 10: Integracão Profunda Google Calendar (Em Aberto 📋)
+- [ ] **Sincronização de Exclusão**: Remover evento do Google quando removido no App.
+- [ ] **Sincronização de Edição**: Atualizar evento do Google quando editado no App.
+- [ ] **Prevenção de Duplicatas**: Verificar conflito de horário no Google antes de criar nova escala.
+- [ ] **Gestão de IDs**: Salvar `calendar_event_id` para permitir sincronização bidirecional futura.
