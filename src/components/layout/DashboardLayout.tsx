@@ -1,12 +1,12 @@
 'use client'
 
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
+import { MobileNav } from '@/components/layout/MobileNav'
 
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Calendar, FileText, User, LogOut, Menu, X } from 'lucide-react'
-import { useState } from 'react'
+import { Calendar, FileText, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -33,7 +33,6 @@ interface DashboardLayoutProps {
  */
 export function DashboardLayout({ children }: DashboardLayoutProps) {
     const pathname = usePathname()
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     const handleLogout = async () => {
         const supabase = createClient()
@@ -43,8 +42,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header Mobile */}
-            <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-card px-4 lg:hidden">
+            {/* Header Mobile (Logo + ThemeToggle only) */}
+            <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 lg:hidden">
                 <div className="flex items-center gap-2">
                     <Image
                         src="/gsv-logo.png"
@@ -57,31 +56,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
                 <div className="flex items-center gap-2">
                     <ThemeToggle />
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="Toggle menu"
-                    >
-                        {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                    </Button>
                 </div>
             </header>
 
-            {/* Mobile Menu Overlay */}
-            {isMobileMenuOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                />
-            )}
-
-            {/* Sidebar */}
+            {/* Sidebar (Desktop Only via lg:translate-x-0 and hidden on smaller screens by default logic, but we need to strictly hide/show) */}
             <aside
-                className={cn(
-                    'fixed left-0 top-0 z-50 h-full w-64 transform bg-sidebar border-r transition-transform duration-300 lg:translate-x-0',
-                    isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-                )}
+                className="fixed left-0 top-0 z-50 hidden h-full w-64 border-r bg-sidebar transition-transform lg:block"
             >
                 {/* Logo */}
                 <div className="flex h-16 items-center gap-3 border-b px-6">
@@ -107,7 +87,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
                                     'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                                     isActive
@@ -140,9 +119,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </aside>
 
             {/* Main Content */}
+            {/* Added pb-20 for mobile nav spacing */}
             <main className="lg:pl-64">
-                <div className="min-h-screen p-4 lg:p-8">{children}</div>
+                <div className="min-h-screen p-4 pb-24 lg:p-8 lg:pb-8">{children}</div>
             </main>
+
+            {/* Mobile Navigation (Bottom Bar) */}
+            <MobileNav />
         </div>
     )
 }
+
