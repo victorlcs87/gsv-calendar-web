@@ -116,7 +116,10 @@ export function ScaleFormModal({
     const [isOffline, setIsOffline] = useState(false)
 
     useEffect(() => {
-        setIsOffline(!navigator.onLine)
+        if (typeof window !== 'undefined') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setIsOffline(!navigator.onLine)
+        }
         const handleOnline = () => setIsOffline(false)
         const handleOffline = () => setIsOffline(true)
         window.addEventListener('online', handleOnline)

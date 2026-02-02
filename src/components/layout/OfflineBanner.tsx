@@ -7,11 +7,17 @@ import { cn } from '@/lib/utils'
 export function OfflineBanner() {
     const [isOffline, setIsOffline] = useState(false)
 
+
     useEffect(() => {
-        setIsOffline(!navigator.onLine)
+        // Set initial state based on navigator
+        if (typeof window !== 'undefined') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setIsOffline(!navigator.onLine)
+        }
 
         const handleOnline = () => setIsOffline(false)
         const handleOffline = () => setIsOffline(true)
+
 
         window.addEventListener('online', handleOnline)
         window.addEventListener('offline', handleOffline)

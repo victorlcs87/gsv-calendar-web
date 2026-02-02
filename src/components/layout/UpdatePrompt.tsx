@@ -1,8 +1,5 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function UpdatePrompt() {

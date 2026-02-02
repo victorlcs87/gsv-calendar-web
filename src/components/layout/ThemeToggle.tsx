@@ -26,14 +26,21 @@ export function ThemeToggle() {
     }
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true)
+    }, [])
+
+    useEffect(() => {
+        if (!mounted) return
         const stored = localStorage.getItem('theme')
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
         const isDarkMode = stored === 'dark' || (!stored && prefersDark)
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsDark(isDarkMode)
         document.documentElement.classList.toggle('dark', isDarkMode)
         updateThemeColor(isDarkMode)
-    }, [])
+    }, [mounted])
 
     const toggleTheme = () => {
         const newIsDark = !isDark

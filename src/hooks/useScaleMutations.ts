@@ -18,6 +18,11 @@ import {
 export function useScaleMutations(onSuccess?: () => void) {
     const [isSubmitting, setIsSubmitting] = useState(false)
 
+    // Helper para converter texto em riscado (Unicode strikethrough)
+    const toStrikethrough = (text: string) => {
+        return text.split('').map(char => char + '\u0336').join('')
+    }
+
     // Helper para formatar data para Google Event
     const formatToGoogleEvent = (input: ScaleInput) => {
         const startIso = parseISO(`${input.data}T${input.horaInicio.toString().padStart(2, '0')}:00:00`)
@@ -34,9 +39,9 @@ export function useScaleMutations(onSuccess?: () => void) {
         // Base Summary
         let summary = operacao ? `GSV - ${operacao}` : `GSV - ${input.local}`
 
-        // Modificar título se inativo
+        // Modificar título se inativo (RISCADO)
         if (input.ativa === false) {
-            summary = `[CANCELADO] ${summary}`
+            summary = toStrikethrough(summary)
         }
 
         let description = input.observacoes || ''
@@ -73,7 +78,6 @@ export function useScaleMutations(onSuccess?: () => void) {
             if (authError || !session?.user) throw new Error('Usuário não autenticado')
 
             // --- Google Calendar Check (Duplicate Prevention) ---
-            let calendarEventId: string | undefined = undefined
             let isSynced = false
             const token = session.provider_token
 
@@ -100,8 +104,9 @@ export function useScaleMutations(onSuccess?: () => void) {
                         toast.error('Já existe uma escala para este horário no Google Calendar!')
                         return false
                     }
-                } catch (err: any) {
-                    console.warn('Erro na verificação do Google Calendar:', err)
+                } catch (err: unknown) {
+                    const message = err instanceof Error ? err.message : 'Unknown error'
+                    console.warn('Erro na verificação do Google Calendar:', message)
                 }
             }
             // ----------------------------------------------------
@@ -147,7 +152,6 @@ export function useScaleMutations(onSuccess?: () => void) {
                             })
                             .eq('id', insertedScale.id)
 
-                        calendarEventId = createdEvent.id
                         isSynced = true
                     }
                 } catch (gError) {
@@ -294,10 +298,11 @@ export function useScaleMutations(onSuccess?: () => void) {
                 try {
                     const calendarId = await getCalendarId(token)
                     await deleteEvent(token, calendarId, scale.calendar_event_id)
-                } catch (gError: any) {
+                } catch (gError: unknown) {
                     console.error('Erro ao deletar do Google:', gError)
+                    const err = gError as { code?: number }
                     // 410 Gone ou 404 Not Found significa que já não existe, então podemos prosseguir
-                    if (gError?.code !== 404 && gError?.code !== 410) {
+                    if (err?.code !== 404 && err?.code !== 410) {
                         toast.error('Falha ao remover do Google Calendar. A operação foi cancelada para evitar inconsistência.')
                         return false
                     }
