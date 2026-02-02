@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths, addMonths, startOfYear } from 'date-fns'
+import { isWithinInterval, parseISO, startOfYear } from 'date-fns'
 import { DateRange } from "react-day-picker"
 import { TrendingUp, TrendingDown, Clock, DollarSign } from 'lucide-react'
 import { DateRangePicker } from '@/components/ui/date-range-picker'

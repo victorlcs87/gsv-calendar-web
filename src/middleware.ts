@@ -1,4 +1,3 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**
@@ -6,7 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  * Protege rotas do dashboard e redireciona usuários não autenticados
  */
 export async function middleware(request: NextRequest) {
-    let supabaseResponse = NextResponse.next({
+    const supabaseResponse = NextResponse.next({
         request,
     })
 
