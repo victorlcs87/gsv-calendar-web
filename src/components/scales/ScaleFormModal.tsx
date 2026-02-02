@@ -199,82 +199,84 @@ export function ScaleFormModal({
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-3">
                     {/* Botões de Preset (Atalhos) */}
-                    <div className="flex gap-2 mb-2 p-2 bg-muted/50 rounded-lg">
-                        <div className="flex items-center text-xs text-muted-foreground mr-2">
+                    <div className="flex gap-2 mb-1 p-1.5 bg-muted/50 rounded-lg overflow-x-auto">
+                        <div className="flex items-center text-xs text-muted-foreground mr-1 shrink-0">
                             <Clock className="w-3 h-3 mr-1" />
                             Atalhos:
                         </div>
                         <Badge
                             variant="outline"
-                            className="cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
+                            className="cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors text-[10px] px-2 h-5"
                             onClick={() => applyPreset('24h')}
                         >
-                            24h (8-8)
+                            24h
                         </Badge>
                         <Badge
                             variant="outline"
-                            className="cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
+                            className="cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors text-[10px] px-2 h-5"
                             onClick={() => applyPreset('12h_dia')}
                         >
-                            12h Dia (7-19)
+                            12h Dia
                         </Badge>
                         <Badge
                             variant="outline"
-                            className="cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
+                            className="cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors text-[10px] px-2 h-5"
                             onClick={() => applyPreset('12h_noite')}
                         >
-                            12h Noite (19-7)
+                            12h Noite
                         </Badge>
                     </div>
 
-                    {/* Data */}
-                    <div className="space-y-2">
-                        <Label>Data</Label>
-                        <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full justify-start text-left font-normal"
-                                onClick={() => setCalendarOpen(true)}
-                            >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {data ? format(data, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecionar data'}
-                            </Button>
-                            <DialogContent className="w-auto p-4">
-                                <DialogHeader>
-                                    <DialogTitle>Selecionar Data</DialogTitle>
-                                </DialogHeader>
-                                <Calendar
-                                    mode="single"
-                                    selected={data}
-                                    onSelect={(date) => {
-                                        setData(date)
-                                        setCalendarOpen(false)
-                                    }}
-                                    initialFocus
-                                />
-                            </DialogContent>
-                        </Dialog>
-                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Data */}
+                        <div className="space-y-1">
+                            <Label>Data</Label>
+                            <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full justify-start text-left font-normal"
+                                    onClick={() => setCalendarOpen(true)}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {data ? format(data, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecionar data'}
+                                </Button>
+                                <DialogContent className="w-auto p-4">
+                                    <DialogHeader>
+                                        <DialogTitle>Selecionar Data</DialogTitle>
+                                    </DialogHeader>
+                                    <Calendar
+                                        mode="single"
+                                        selected={data}
+                                        onSelect={(date) => {
+                                            setData(date)
+                                            setCalendarOpen(false)
+                                        }}
+                                        initialFocus
+                                    />
+                                </DialogContent>
+                            </Dialog>
+                        </div>
 
-                    {/* Tipo */}
-                    <div className="space-y-2">
-                        <Label>Tipo</Label>
-                        <Select value={tipo} onValueChange={(v) => setTipo(v as TipoEscala)}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Ordinária">Ordinária</SelectItem>
-                                <SelectItem value="Extra">Extra</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        {/* Tipo */}
+                        <div className="space-y-1">
+                            <Label>Tipo</Label>
+                            <Select value={tipo} onValueChange={(v) => setTipo(v as TipoEscala)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Ordinária">Ordinária</SelectItem>
+                                    <SelectItem value="Extra">Extra</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     {/* Operação */}
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <Label htmlFor="operacao">Operação</Label>
                         <Input
                             id="operacao"
@@ -285,7 +287,7 @@ export function ScaleFormModal({
                     </div>
 
                     {/* Local */}
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <Label htmlFor="local">Local</Label>
                         <Input
                             id="local"
@@ -296,8 +298,8 @@ export function ScaleFormModal({
                     </div>
 
                     {/* Horários */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
                             <Label>Hora Início</Label>
                             <Select value={horaInicio} onValueChange={setHoraInicio}>
                                 <SelectTrigger>
@@ -312,7 +314,7 @@ export function ScaleFormModal({
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                             <Label>Hora Fim</Label>
                             <Select value={horaFim} onValueChange={setHoraFim}>
                                 <SelectTrigger>
@@ -330,7 +332,7 @@ export function ScaleFormModal({
                     </div>
 
                     {/* Observações */}
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <Label htmlFor="observacoes">Observações (opcional)</Label>
                         <Input
                             id="observacoes"
@@ -364,6 +366,6 @@ export function ScaleFormModal({
                     </DialogFooter>
                 </form>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     )
 }
