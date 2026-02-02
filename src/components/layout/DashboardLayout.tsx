@@ -43,7 +43,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return (
         <div className="min-h-screen bg-background">
             {/* Header Mobile (Logo + ThemeToggle only) */}
-            <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-red-600 px-4 lg:hidden">
+            <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 lg:hidden">
                 <div className="flex items-center gap-2">
                     <Image
                         src="/gsv-logo.png"
