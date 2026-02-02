@@ -75,7 +75,7 @@ O objetivo é garantir paridade de recursos com o projeto mobile original (`gsv-
 
 ### Fase 8: Polimento UI/UX e Mobile (Concluída ✅)
 - [x] **UI**: Refinamento visual (Gradientes, Cards Unificados, Paleta de Cores).
-- [x] **Mobile**: Adaptação para PWA iOS (Standalone Mode).
+- [x] **Mobile**: Adaptação para PWA iOS (Standalone Mode, Scope fixo e Viewport travada).
 - [x] **UX**: Ajustes de layout (Quebra de linha em botões, Posicionamento de Toggle de Tema).
 - [x] **Auditoria**: Código e Segurança validados.
 
