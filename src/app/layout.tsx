@@ -40,8 +40,8 @@ export const metadata: Metadata = {
     title: 'GSV Calendar',
   },
   icons: {
-    icon: '/icon.png',
-    apple: '/app-icon-v2.png',
+    icon: '/icon-512.png?v=3',
+    apple: '/apple-touch-icon.png?v=3',
   },
 }
 
