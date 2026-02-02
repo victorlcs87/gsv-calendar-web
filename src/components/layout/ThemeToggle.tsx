@@ -12,14 +12,27 @@ export function ThemeToggle() {
     const [isDark, setIsDark] = useState(false)
     const [mounted, setMounted] = useState(false)
 
+    const updateThemeColor = (darkMode: boolean) => {
+        const themeColor = darkMode ? '#09090b' : '#ffffff'
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', themeColor)
+        } else {
+            const meta = document.createElement('meta')
+            meta.name = 'theme-color'
+            meta.content = themeColor
+            document.head.appendChild(meta)
+        }
+    }
+
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true)
         const stored = localStorage.getItem('theme')
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
         const isDarkMode = stored === 'dark' || (!stored && prefersDark)
         setIsDark(isDarkMode)
         document.documentElement.classList.toggle('dark', isDarkMode)
+        updateThemeColor(isDarkMode)
     }, [])
 
     const toggleTheme = () => {
@@ -27,6 +40,7 @@ export function ThemeToggle() {
         setIsDark(newIsDark)
         document.documentElement.classList.toggle('dark', newIsDark)
         localStorage.setItem('theme', newIsDark ? 'dark' : 'light')
+        updateThemeColor(newIsDark)
     }
 
     if (!mounted) return null
