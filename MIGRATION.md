@@ -61,10 +61,6 @@ O objetivo é garantir paridade de recursos com o projeto mobile original (`gsv-
     - [x] Lógica para criar eventos no Google Calendar.
     - [x] Atualizar status de sincronização no banco de dados.
 
-### Fase 7: Deploy e Finalização (Pendente ⏳)
-
-- [ ] OAuth com Google (NextAuth ou Supabase Auth Provider)
-- [ ] Sincronização Bidirecional ou Unidirecional (Push para GCal)
 
 ### Fase 7: Deploy e CI/CD (Concluída ✅)
 - [x] Configuração de Headers de Segurança (Next.config)
