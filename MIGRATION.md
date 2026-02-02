@@ -33,8 +33,8 @@ Migração do app React Native (Expo) para Next.js 15 Web App (PWA).
     - [x] Mobile-first UI optimizations (Compact cards, Touch targets).
 
 ## 🚧 Pending / Improvements
-- [ ] **Offline Mode**: Better offline support with caching (Supabase doesn't support offline mutations out-of-box easily on web, requires distinct strategy like rxdb or local storage sync).
-- [ ] **Tests**: Add integration tests (Playwright/Cypress).
+- [x] **Offline Mode**: Supported via localStorage caching + PWA Service Worker.
+- [x] **Tests**: Basic E2E auth tests with Playwright.
 - [ ] **Accessibility**: Audit ARIA labels and keyboard navigation.
 - [ ] **Performance**: Analyze bundle size and optimize images/icons.
 
