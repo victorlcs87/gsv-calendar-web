@@ -241,7 +241,7 @@ export function ScaleFormModal({
                                     onClick={() => setCalendarOpen(true)}
                                 >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {data ? format(data, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecionar data'}
+                                    {data ? format(data, "dd/MM/yyyy", { locale: ptBR }) : 'Selecionar data'}
                                 </Button>
                                 <DialogContent className="w-auto p-4">
                                     <DialogHeader>
