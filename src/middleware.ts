@@ -1,3 +1,4 @@
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**
@@ -5,11 +6,10 @@ import { NextResponse, type NextRequest } from 'next/server'
  * Protege rotas do dashboard e redireciona usuários não autenticados
  */
 export async function middleware(request: NextRequest) {
-    const supabaseResponse = NextResponse.next({
+    let supabaseResponse = NextResponse.next({
         request,
     })
 
-    /*
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -32,37 +32,35 @@ export async function middleware(request: NextRequest) {
             },
         }
     )
-    */
 
     // Refresh session se expirada
-    // Verificação de autenticação removida temporariamente para garantir PWA Standalone no iOS
-    // Mantendo estrutura para reativar se necessário com lógica de cliente
-    /*
+    // IMPORTANTE: getUser() valida a sessão com o Supabase Auth server
     const {
         data: { user },
     } = await supabase.auth.getUser()
 
     const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
         request.nextUrl.pathname.startsWith('/register')
+
+    // Rotas protegidas (todas menos auth, api, static)
     const isDashboardRoute = request.nextUrl.pathname === '/' ||
         request.nextUrl.pathname.startsWith('/escalas') ||
         request.nextUrl.pathname.startsWith('/relatorios') ||
         request.nextUrl.pathname.startsWith('/perfil')
-    */
 
-    // Redireciona para login se não autenticado
-    // if (!user && isDashboardRoute) {
-    //     const url = request.nextUrl.clone()
-    //     url.pathname = '/login'
-    //     return NextResponse.redirect(url)
-    // }
+    // Redireciona para login se não autenticado e tentando acessar dashboard
+    if (!user && isDashboardRoute) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        return NextResponse.redirect(url)
+    }
 
-    // Redireciona para dashboard se já autenticado
-    // if (user && isAuthRoute) {
-    //     const url = request.nextUrl.clone()
-    //     url.pathname = '/'
-    //     return NextResponse.redirect(url)
-    // }
+    // Redireciona para dashboard se já autenticado e tentando acessar login/register
+    if (user && isAuthRoute) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/'
+        return NextResponse.redirect(url)
+    }
 
     return supabaseResponse
 }
