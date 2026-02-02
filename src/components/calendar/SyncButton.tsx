@@ -123,6 +123,8 @@ export function SyncButton({ scales }: SyncButtonProps) {
             }
 
             let syncedCount = 0
+            let linkedCount = 0
+            let errorCount = 0
 
             // Limitando lote para evitar rate limit
             const batch = scalesToSync.slice(0, 10)
@@ -158,17 +160,15 @@ export function SyncButton({ scales }: SyncButtonProps) {
                     location: scale.local
                 }
 
-                // Chamar listEvents que foi importado mas não estava sendo usado antes
-                // Precisa importar listEvents no topo se não estiver
-                // Assumindo que listEvents existe em @/lib/googleCalendar
-                // para duplicar a lógica de prevenção do hook:
                 try {
                     const { listEvents } = await import('@/lib/googleCalendar')
-                    const events = await listEvents(token, targetCalendarId, gEvent.start.dateTime, gEvent.end.dateTime)
+
+                    // CORREÇÃO: Usar .toISOString() (UTC) para query, pois a API exige RFC3339
+                    // A data original 'startIso' é um objeto Date gerado com fuso local do browser pelo parseISO
+                    const events = await listEvents(token, targetCalendarId, startIso.toISOString(), endIso.toISOString())
 
                     const hasConflict = events.some(e => {
                         const sameTitle = e.summary === gEvent.summary
-                        // gEvent.start.dateTime tem formato YYYY-MM-DDTHH:mm:ss
                         const eventStart = new Date(e.start.dateTime || e.start.date || '').getTime()
                         const inputStart = new Date(gEvent.start.dateTime).getTime()
                         const sameTime = Math.abs(eventStart - inputStart) < 60000
@@ -176,8 +176,6 @@ export function SyncButton({ scales }: SyncButtonProps) {
                     })
 
                     if (hasConflict) {
-                        // Se já existe, apenas marcamos como sincronizado no banco para evitar tentar de novo
-                        // Mas precisamos achar o ID do evento existente para salvar
                         const existingEvent = events.find(e => {
                             const sameTitle = e.summary === gEvent.summary
                             const eventStart = new Date(e.start.dateTime || e.start.date || '').getTime()
@@ -185,20 +183,20 @@ export function SyncButton({ scales }: SyncButtonProps) {
                             return sameTitle && Math.abs(eventStart - inputStart) < 60000
                         })
 
-                        if (existingEvent && existingEvent.id) { // Verificando id explicitamente
+                        if (existingEvent && existingEvent.id) {
                             await supabase
                                 .from('scales')
                                 .update({
                                     sincronizado: true,
                                     sync_status: 'synced',
-                                    calendar_event_id: existingEvent.id // Salvando ID existente
+                                    calendar_event_id: existingEvent.id
                                 })
                                 .eq('id', scale.id)
+                            linkedCount++
                         }
-                        continue // Pula para o próximo sem criar duplicata
+                        continue
                     }
 
-                    // Se não existe conflito, cria novo
                     const createdEvent = await insertEvent(token, targetCalendarId, gEvent)
 
                     if (createdEvent.id) {
@@ -215,17 +213,20 @@ export function SyncButton({ scales }: SyncButtonProps) {
 
                 } catch (err) {
                     console.error(`Falha ao sincronizar escala ${scale.id}:`, err)
+                    errorCount++
                 }
             }
 
-            if (syncedCount > 0) {
-                toast.success(`Sincronização concluída!`, {
-                    description: `${syncedCount} novas escalas sincronizadas.`
+            if (errorCount > 0) {
+                toast.warning('Algumas escalas falharam.', {
+                    description: `Novas: ${syncedCount}, Vinculadas: ${linkedCount}, Falhas: ${errorCount}`
+                })
+            } else if (syncedCount > 0 || linkedCount > 0) {
+                toast.success('Sincronização concluída!', {
+                    description: `Novas: ${syncedCount}, Vinculadas: ${linkedCount}`
                 })
             } else {
-                toast.info('Sincronização atualizada.', {
-                    description: 'Escalas existentes foram vinculadas.'
-                })
+                toast.info('Nenhuma alteração necessária.')
             }
 
             setDialogOpen(false)
