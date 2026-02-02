@@ -91,8 +91,15 @@ O objetivo é garantir paridade de recursos com o projeto mobile original (`gsv-
 | **Relatórios** | Cards + Charts | Cards + Charts Interativos | ✅ Melhor |
 | **Filtros** | Custom Hooks | Server/Client State | ✅ Concluído |
 
-## 🚀 Status Atual: PRONTO PARA USO (v1.0)
-O projeto atingiu a paridade de funcionalidades com o app mobile e inclui melhorias significativas em segurança, performance e interface.
+
+### Fase 9: Otimização PWA e iOS (Concluída ✅)
+- [x] **Ícone iOS**: Configuração de `apple-touch-icon` com "cache busting" (`?v=5`) e fundo opaco "full-bleed" para preenchimento correto.
+- [x] **Status Bar**: Configuração de `black-translucent` para imersão em dark mode.
+- [x] **Deploy CI/CD**: Correções no pipeline do GitHub Actions (Linting rigoroso e Env Vars de fallback).
+- [x] **Assets**: Organização correta de assets estáticos na pasta `public/`.
+
+## 🚀 Status Atual: PRONTO PARA USO (v1.1)
+O projeto está estável, com pipeline de deploy automático corrigido e experiência PWA otimizada para iOS.
 
 ### O que falta / Próximos Passos (Backlog Futuro):
 1.  **Monitoramento**: Acompanhar logs do Vercel/Supabase para eventuais erros em produção.
