@@ -2,10 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths, addMonths, startOfYear } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { DateRange } from "react-day-picker"
-import { ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown, Clock, DollarSign, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { TrendingUp, TrendingDown, Clock, DollarSign } from 'lucide-react'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { MonthlyReport } from '@/types'
@@ -17,7 +15,7 @@ import { OperationRanking, LocationRanking, EarningsChart } from '@/components/r
  * Exibe estatísticas mensais e anuais das escalas
  */
 export default function RelatoriosPage() {
-    const { scales, isLoading } = useScales()
+    const { scales } = useScales()
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
         from: startOfYear(new Date()),
         to: new Date()

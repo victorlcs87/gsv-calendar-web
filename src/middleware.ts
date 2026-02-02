@@ -10,6 +10,7 @@ export async function middleware(request: NextRequest) {
         request,
     })
 
+    /*
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -32,8 +33,12 @@ export async function middleware(request: NextRequest) {
             },
         }
     )
+    */
 
     // Refresh session se expirada
+    // Verificação de autenticação removida temporariamente para garantir PWA Standalone no iOS
+    // Mantendo estrutura para reativar se necessário com lógica de cliente
+    /*
     const {
         data: { user },
     } = await supabase.auth.getUser()
@@ -44,6 +49,7 @@ export async function middleware(request: NextRequest) {
         request.nextUrl.pathname.startsWith('/escalas') ||
         request.nextUrl.pathname.startsWith('/relatorios') ||
         request.nextUrl.pathname.startsWith('/perfil')
+    */
 
     // Redireciona para login se não autenticado
     // if (!user && isDashboardRoute) {

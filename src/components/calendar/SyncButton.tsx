@@ -14,7 +14,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
-import { Calendar, Loader2, RefreshCw, Settings2 } from 'lucide-react'
+import { Calendar, Loader2, RefreshCw } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
 import type { Scale } from '@/types'
@@ -37,6 +37,7 @@ export function SyncButton({ scales }: SyncButtonProps) {
 
     useEffect(() => {
         checkConnection()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const checkConnection = async () => {

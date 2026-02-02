@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Upload, FileText, AlertCircle, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react'
+import { Upload, FileText, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     Dialog,
@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog'
 import { parseCsvFile, type CsvParseResult } from '@/lib/csvParser'
 import { useScaleMutations } from '@/hooks/useScaleMutations'
-import { useScales } from '@/hooks/useScales'
 import { toast } from 'sonner'
 
 /**
