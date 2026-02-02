@@ -66,33 +66,35 @@ O objetivo é garantir paridade de recursos com o projeto mobile original (`gsv-
 - [ ] OAuth com Google (NextAuth ou Supabase Auth Provider)
 - [ ] Sincronização Bidirecional ou Unidirecional (Push para GCal)
 
-### Fase 7: Deploy e CI/CD (Pronta para Execução 🚀)
+### Fase 7: Deploy e CI/CD (Concluída ✅)
 - [x] Configuração de Headers de Segurança (Next.config)
 - [x] Variáveis de Ambiente de Produção (Exemplo criado)
 - [x] Pipeline de verificação (Lint/Build no GitHub Actions)
-- [x] Script de Guia de Deploy (`scripts/deploy-guide.sh`)
+- [x] Deploy na Vercel (Produção)
+- [x] Correção de Redirects (Supabase/Google Auth)
 
-### Fase 8: Auditoria e Polimento Final (Concluída ✅)
-- [x] Criação de Prompt de Auditoria (`PROMPT_AUDIT.md`)
-- [x] Execução de Auditoria de Código e Segurança
-- [x] Geração de Relatório de Auditoria (`AUDIT_REPORT.md`)
-- [x] Validação de dependências (`tw-animate-css` mantido)
+### Fase 8: Polimento UI/UX e Mobile (Concluída ✅)
+- [x] **UI**: Refinamento visual (Gradientes, Cards Unificados, Paleta de Cores).
+- [x] **Mobile**: Adaptação para PWA iOS (Standalone Mode).
+- [x] **UX**: Ajustes de layout (Quebra de linha em botões, Posicionamento de Toggle de Tema).
+- [x] **Auditoria**: Código e Segurança validados.
 
-## � Comparativo Mobile vs Web
+## 📱 Comparativo Mobile vs Web
 
 | Feature | Mobile (Expo) | Web (Next.js) | Status Web |
 |---------|---------------|---------------|------------|
 | **Auth** | Supabase/Context | Supabase/Middleware | ✅ Igual |
 | **Banco** | Supabase | Supabase + RLS | ✅ Melhor (RLS) |
 | **Import** | CSV (Expo FS) | CSV (DOM File API) | ✅ Igual |
-| **Export** | CSV (Sharing) | CSV (Blob Download) | ⏳ A Fazer |
-| **Calendar** | Nativo (iOS/Android) | OAuth/API (Google) | ⏳ A Fazer |
+| **Export** | CSV (Sharing) | CSV (Blob Download) | ✅ Concluído |
+| **Calendar** | Nativo (iOS/Android) | OAuth/API (Google) | ✅ Concluído |
 | **Relatórios** | Cards + Charts | Cards + Charts Interativos | ✅ Melhor |
-| **Filtros** | Custom Hooks | Server/Client State | 🚧 Parcial |
+| **Filtros** | Custom Hooks | Server/Client State | ✅ Concluído |
 
-## 📝 Padrões Implementados
+## 🚀 Status Atual: PRONTO PARA USO (v1.0)
+O projeto atingiu a paridade de funcionalidades com o app mobile e inclui melhorias significativas em segurança, performance e interface.
 
-- **Arquitetura**: Next.js App Router (React Server Components por padrão).
-- **Estilização**: Tailwind v4 + Variáveis CSS otimizadas.
-- **Gerenciamento de Estado**: React Query (via Supabase Hooks) ou Server Actions.
-- **Tipagem**: TypeScript estrito em todo o projeto.
+### O que falta / Próximos Passos (Backlog Futuro):
+1.  **Monitoramento**: Acompanhar logs do Vercel/Supabase para eventuais erros em produção.
+2.  **Testes E2E**: Implementar Cypress ou Playwright para testes automatizados de fluxo crítico.
+3.  **Sync Bidirecional**: Ouvir webhook do Google Calendar para atualizar escalas se o evento for deletado lá (Opcional).
