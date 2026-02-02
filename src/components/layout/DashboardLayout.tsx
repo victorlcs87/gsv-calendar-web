@@ -52,7 +52,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                         height={32}
                         className="object-contain"
                     />
-                    <span className="text-xl font-bold text-primary">GSV</span>
+                    <span className="text-xl font-bold text-primary">GSV App</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <ThemeToggle />

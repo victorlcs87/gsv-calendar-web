@@ -15,7 +15,7 @@ export function MobileNav() {
     ]
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-lg lg:hidden pb-safe">
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-lg lg:hidden pb-[env(safe-area-inset-bottom)]">
             <nav className="flex items-center justify-around h-16 px-2">
                 {navLinks.map((link) => {
                     const isActive = pathname === link.href ||
