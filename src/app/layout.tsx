@@ -39,6 +39,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'GSV Calendar',
   },
+  icons: {
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
+  },
 }
 
 export default function RootLayout({
