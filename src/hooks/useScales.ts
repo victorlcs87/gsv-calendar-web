@@ -46,6 +46,8 @@ export function useScales() {
                     calendar_event_id?: string
                     created_at: string
                     updated_at: string
+                    ativa: boolean
+                    motivo_inatividade?: string
                 }
 
                 // Mapeia os dados do banco (snake_case) para a interface (camelCase)
@@ -65,7 +67,9 @@ export function useScales() {
                     syncStatus: item.sync_status,
                     calendar_event_id: item.calendar_event_id,
                     created_at: item.created_at,
-                    updated_at: item.updated_at
+                    updated_at: item.updated_at,
+                    ativa: item.ativa,
+                    motivo_inatividade: item.motivo_inatividade
                 }))
                 setScales(mappedScales)
             }

@@ -162,7 +162,6 @@ export function ScaleFormModal({
             local: local.trim(),
             horaInicio: horaInicioNum,
             horaFim: horaFimNum,
-            horaFim: horaFimNum,
             observacoes: finalObs || undefined,
             ativa,
             motivo_inatividade: !ativa ? motivoInatividade.trim() : undefined
