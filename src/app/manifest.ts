@@ -7,6 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
         description: 'Sistema de gestão de escalas do CBMDF',
         start_url: '/',
         display: 'standalone',
+        scope: '/',
+        orientation: 'portrait',
         background_color: '#ffffff',
         theme_color: '#000000',
         icons: [
