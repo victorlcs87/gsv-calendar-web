@@ -11,8 +11,39 @@ export function useScales() {
     const [scales, setScales] = useState<Scale[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [isOffline, setIsOffline] = useState(false)
+
+    // Load from local storage on mount
+    useEffect(() => {
+        const cached = localStorage.getItem('gsv_scales_cache')
+        if (cached) {
+            try {
+                setScales(JSON.parse(cached))
+                setIsLoading(false) // Show cached data immediately
+            } catch (e) {
+                console.error('Failed to parse cached scales', e)
+            }
+        }
+        setIsOffline(!navigator.onLine)
+
+        const handleOnline = () => setIsOffline(false)
+        const handleOffline = () => setIsOffline(true)
+
+        window.addEventListener('online', handleOnline)
+        window.addEventListener('offline', handleOffline)
+
+        return () => {
+            window.removeEventListener('online', handleOnline)
+            window.removeEventListener('offline', handleOffline)
+        }
+    }, [])
 
     const fetchScales = useCallback(async () => {
+        if (!navigator.onLine) {
+            setIsLoading(false)
+            return
+        }
+
         try {
             setIsLoading(true)
             setError(null)
@@ -72,6 +103,8 @@ export function useScales() {
                     motivo_inatividade: item.motivo_inatividade
                 }))
                 setScales(mappedScales)
+                // Save to local storage
+                localStorage.setItem('gsv_scales_cache', JSON.stringify(mappedScales))
             }
         } catch (err) {
             console.error('Erro ao buscar escalas:', err)
@@ -91,6 +124,7 @@ export function useScales() {
         scales,
         isLoading,
         error,
-        refresh: fetchScales
+        refresh: fetchScales,
+        isOffline
     }
 }

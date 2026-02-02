@@ -113,8 +113,27 @@ export function ScaleFormModal({
         }
     }, [scale, open])
 
+    const [isOffline, setIsOffline] = useState(false)
+
+    useEffect(() => {
+        setIsOffline(!navigator.onLine)
+        const handleOnline = () => setIsOffline(false)
+        const handleOffline = () => setIsOffline(true)
+        window.addEventListener('online', handleOnline)
+        window.addEventListener('offline', handleOffline)
+        return () => {
+            window.removeEventListener('online', handleOnline)
+            window.removeEventListener('offline', handleOffline)
+        }
+    }, [])
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        if (isOffline) {
+            toast.error('Você está offline. Conecte-se para salvar.')
+            return
+        }
 
         // Validações básicas
         if (!data) {
@@ -135,11 +154,6 @@ export function ScaleFormModal({
             toast.error('Hora de início inválida (0-23)')
             return
         }
-        if (isNaN(horaFimNum) || horaFimNum < 0 || horaFimNum > 23) {
-            toast.error('Hora de fim inválida (0-23)')
-            return
-        }
-
         if (isNaN(horaFimNum) || horaFimNum < 0 || horaFimNum > 23) {
             toast.error('Hora de fim inválida (0-23)')
             return
@@ -216,9 +230,11 @@ export function ScaleFormModal({
                         {isEdit ? 'Editar Escala' : 'Nova Escala'}
                     </DialogTitle>
                     <DialogDescription>
-                        {isEdit
-                            ? 'Atualize os dados da escala abaixo.'
-                            : 'Preencha os dados para criar uma nova escala.'}
+                        {isOffline
+                            ? 'Você está offline. Mutações estão indisponíveis.'
+                            : isEdit
+                                ? 'Atualize os dados da escala abaixo.'
+                                : 'Preencha os dados para criar uma nova escala.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -426,12 +442,14 @@ export function ScaleFormModal({
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
+                        <Button type="submit" disabled={isSubmitting || isOffline}>
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Salvando...
                                 </>
+                            ) : isOffline ? (
+                                'Sem Conexão'
                             ) : isEdit ? (
                                 'Atualizar'
                             ) : (

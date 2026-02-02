@@ -136,6 +136,7 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                                     size="sm"
                                     className="h-8 w-8 px-0 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                                     onClick={() => onDelete(scale)}
+                                    aria-label="Excluir escala"
                                 >
                                     <Trash2 className="h-3 w-3" />
                                 </Button>

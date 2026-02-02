@@ -31,6 +31,10 @@ interface DashboardLayoutProps {
  * Layout principal do dashboard com sidebar responsiva
  * Inclui navegação, logo e controle de sessão
  */
+import { OfflineBanner } from '@/components/layout/OfflineBanner'
+
+// ...
+
 export function DashboardLayout({ children }: DashboardLayoutProps) {
     const pathname = usePathname()
 
@@ -42,6 +46,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
     return (
         <div className="min-h-screen bg-background">
+            <OfflineBanner />
             {/* Header Mobile (Logo + ThemeToggle only) */}
             <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 lg:hidden">
                 <div className="flex items-center gap-2">
