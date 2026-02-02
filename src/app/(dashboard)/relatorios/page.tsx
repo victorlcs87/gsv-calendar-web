@@ -34,6 +34,9 @@ export default function RelatoriosPage() {
 
         return scales.filter((scale) => {
             if (!scale.data) return false
+            // Ignorar escalas inativas
+            if (scale.ativa === false) return false
+
             try {
                 return isWithinInterval(parseISO(scale.data), interval)
             } catch { return false }
@@ -74,6 +77,7 @@ export default function RelatoriosPage() {
 
         const periodScales = scales.filter((scale) => {
             if (!scale.data) return false
+            if (scale.ativa === false) return false
             try {
                 return isWithinInterval(parseISO(scale.data), interval)
             } catch { return false }
