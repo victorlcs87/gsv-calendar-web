@@ -36,12 +36,12 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'GSV Calendar',
   },
   icons: {
     icon: '/icon.png',
-    apple: '/apple-icon.png',
+    apple: '/app-icon-v2.png',
   },
 }
 
