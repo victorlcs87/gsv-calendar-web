@@ -20,7 +20,7 @@ export const viewport: Viewport = {
   userScalable: false,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
   ],
 }
 
@@ -36,14 +36,14 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'GSV Calendar',
   },
   icons: {
-    icon: '/icon-512.png?v=5',
-    apple: '/apple-touch-icon.png?v=5',
+    icon: '/icon-v2-512.png?v=6',
+    apple: '/apple-touch-icon-v2.png?v=6',
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.json?v=2',
 }
 
 export default function RootLayout({
