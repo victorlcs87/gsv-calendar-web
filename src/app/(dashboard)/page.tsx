@@ -111,12 +111,22 @@ export default function EscalasPage() {
     // Totais do mês
     const totals = useMemo(() => {
         return filteredScales.reduce(
-            (acc, scale) => ({
-                totalHoras: acc.totalHoras + scale.horas,
-                totalBruto: acc.totalBruto + scale.valorBruto,
-                totalLiquido: acc.totalLiquido + scale.valorLiquido,
-                totalEscalas: acc.totalEscalas + 1,
-            }),
+            (acc, scale) => {
+                // Se a escala estiver inativa (ativa === false), não soma nos valores/horas
+                if (scale.ativa === false) {
+                    return {
+                        ...acc,
+                        totalEscalas: acc.totalEscalas + 1 // Contamos como escala existente, mas sem valor
+                    }
+                }
+
+                return {
+                    totalHoras: acc.totalHoras + scale.horas,
+                    totalBruto: acc.totalBruto + scale.valorBruto,
+                    totalLiquido: acc.totalLiquido + scale.valorLiquido,
+                    totalEscalas: acc.totalEscalas + 1,
+                }
+            },
             { totalHoras: 0, totalBruto: 0, totalLiquido: 0, totalEscalas: 0 }
         )
     }, [filteredScales])

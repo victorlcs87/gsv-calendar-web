@@ -27,6 +27,8 @@ export interface Scale {
   calendar_event_id?: string
   created_at: string
   updated_at: string
+  ativa: boolean
+  motivo_inatividade?: string
 }
 
 /** Dados para criar/editar escala */
@@ -37,6 +39,8 @@ export interface ScaleInput {
   horaInicio: number
   horaFim: number
   observacoes?: string
+  ativa?: boolean
+  motivo_inatividade?: string
 }
 
 /** Filtros de busca */

@@ -25,23 +25,37 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
     const dataFormatada = format(parseLocalDate(scale.data), "dd 'de' MMMM", { locale: ptBR })
     const diaSemana = format(parseLocalDate(scale.data), 'EEEE', { locale: ptBR })
     const isOrdinaria = scale.tipo === 'Ordinária'
+    const isAtiva = scale.ativa !== false // Default to true if undefined
+    const motivo = scale.motivo_inatividade || 'Motivo não informado'
 
     return (
-        <Card className="group overflow-hidden transition-all hover:shadow-lg">
+        <Card className={cn(
+            "group overflow-hidden transition-all hover:shadow-lg",
+            !isAtiva && "opacity-75 bg-muted/30 border-dashed"
+        )}>
             <CardContent className="p-0">
                 <div className="flex">
-                    {/* Barra lateral colorida */}
+                    {/* Barra lateral colorida - Cinza se inativa */}
                     <div
                         className={cn(
                             'w-2 shrink-0',
-                            isOrdinaria ? 'bg-primary' : 'bg-secondary'
+                            !isAtiva ? 'bg-muted-foreground/30' :
+                                isOrdinaria ? 'bg-primary' : 'bg-secondary'
                         )}
                     />
 
                     {/* Conteúdo */}
                     <div className="flex flex-1 flex-col gap-3 p-4">
-                        {/* Operação (Topo) */}
-                        {scale.observacoes?.match(/Operação: (.*?)(?:\n|$)/) && (
+                        {/* Badge de Inatividade */}
+                        {!isAtiva && (
+                            <div className="flex items-center gap-2 mb-1 p-2 rounded-md bg-destructive/10 text-destructive text-sm font-medium border border-destructive/20">
+                                <span className="font-bold">Não Realizado:</span>
+                                <span>{motivo}</span>
+                            </div>
+                        )}
+
+                        {/* Operação (Topo) - Só mostra se ativa ou se não tiver badge de inatividade para não poluir */}
+                        {isAtiva && scale.observacoes?.match(/Operação: (.*?)(?:\n|$)/) && (
                             <div className="flex items-start gap-2 mb-1 text-sm font-medium text-amber-600 bg-amber-50 p-2 rounded-md border border-amber-100 dark:bg-amber-950/30 dark:border-amber-900">
                                 <span className="font-bold shrink-0">Operação:</span>
                                 <span className="break-words">{scale.observacoes.match(/Operação: (.*?)(?:\n|$)/)?.[1]}</span>
@@ -54,7 +68,7 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                                 <p className="text-lg font-semibold text-foreground">{dataFormatada}</p>
                                 <p className="text-sm capitalize text-muted-foreground">{diaSemana}</p>
                             </div>
-                            <Badge variant={isOrdinaria ? 'default' : 'secondary'}>
+                            <Badge variant={!isAtiva ? 'outline' : isOrdinaria ? 'default' : 'secondary'}>
                                 {scale.tipo}
                             </Badge>
                         </div>
@@ -80,14 +94,20 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                         <div className="flex items-center justify-between border-t pt-3">
                             <div>
                                 <p className="text-xs text-muted-foreground">Valor Líquido</p>
-                                <p className="text-lg font-bold text-green-600">
-                                    R$ {scale.valorLiquido.toFixed(2)}
+                                <p className={cn(
+                                    "text-lg font-bold",
+                                    !isAtiva ? "text-muted-foreground line-through decoration-destructive/50" : "text-green-600"
+                                )}>
+                                    {scale.valorLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                 </p>
                             </div>
                             <div className="text-right">
                                 <p className="text-xs text-muted-foreground">Bruto</p>
-                                <p className="text-sm text-muted-foreground">
-                                    R$ {scale.valorBruto.toFixed(2)}
+                                <p className={cn(
+                                    "text-sm text-muted-foreground",
+                                    !isAtiva && "line-through"
+                                )}>
+                                    {scale.valorBruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                 </p>
                             </div>
                         </div>
