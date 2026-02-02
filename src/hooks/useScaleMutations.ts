@@ -72,35 +72,43 @@ export function useScaleMutations(onSuccess?: () => void) {
                     const calendarId = await getCalendarId(token)
                     const gEvent = formatToGoogleEvent(input)
 
-                    // Verificar colisão
-                    const events = await listEvents(token, calendarId, gEvent.start.dateTime, gEvent.end.dateTime)
-                    // Filtro simples: se existe QUALQUER evento no mesmo horário exato criado pelo app (pode refinar checando título)
+                    // Para verificar colisão, usamos UTC no listEvents para não quebrar a API
+                    // gEvent.start.dateTime tem "yyyy-MM-ddTHH:mm:ss" sem timezone (mas com campo timeZone separado)
+                    // listEvents precisa de RFC3339 (ex: 2026-02-02T08:00:00Z ou ...-03:00)
+
+                    // Recriamos date objects para conversão
+                    const checkStart = parseISO(gEvent.start.dateTime || '')
+                    const checkEnd = parseISO(gEvent.end.dateTime || '')
+
+                    // queryTime: enviamos como UTC para garantir compatibilidade
+                    // Obs: Se o input não tem informação de timezone, o parseISO usa local do browser/servidor.
+                    // Isso pode gerar drift se o servidor (Vercel) for UTC e o browser -03:00.
+                    // Mas como o 'gEvent.start.dateTime' foi gerado via 'format' sem timezone, ele é "Floating".
+                    // Google listEvents requer timezone. Vamos assumir que a data é no fuso America/Sao_Paulo (-03:00)
+                    // Simplesmente dar append no offset fixo ou usar toISOString() da data LOCAL.
+
+                    // Estratégia Segura: Anexar Z ou offset ao string se ele não tiver.
+                    // parseISO aceita sem offset. toISOString devolve UTC.
+                    const events = await listEvents(token, calendarId, checkStart.toISOString(), checkEnd.toISOString())
+
                     const hasConflict = events.some(e => {
-                        // Comparação EXATA de data e hora (strings ISO completas) e título
-                        // O Google retorna eventos que INTERSECTAM o range.
-                        // Para duplicata exata, queremos saber se começa na mesma hora E tem mesmo nome.
                         const sameTitle = e.summary === gEvent.summary
 
-                        // gEvent.start.dateTime tem formato YYYY-MM-DDTHH:mm:ss (ex: 2026-02-02T08:00:00)
-                        // e.start.dateTime vindo da API pode ter offset (ex: 2026-02-02T08:00:00-03:00)
-                        // Vamos comparar o timestamp para garantir
+                        // timestamps
                         const eventStart = new Date(e.start.dateTime || e.start.date || '').getTime()
-                        const inputStart = new Date(gEvent.start.dateTime).getTime()
+                        const inputStart = checkStart.getTime() // Comparando timestamps absolutos
 
-                        // Tolerância de 1 minuto para diferenças de segundos
                         const sameTime = Math.abs(eventStart - inputStart) < 60000
 
                         return sameTitle && sameTime
                     })
 
                     if (hasConflict) {
-                        // Lançar erro específico para ser tratado no frontend se necessário, 
-                        // ou apenas retornar false aqui com toast
-                        toast.error('Já existe uma escala similar no Google Calendar!')
-                        return false // Interrompe criação
+                        toast.error('Já existe uma escala para este horário no Google Calendar!')
+                        return false
                     }
                 } catch (err: any) {
-                    // Erros de API não devem bloquear o uso do app (exceto se for crítico)
+                    // Erros de API não devem bloquear o uso do app
                     console.warn('Erro na verificação do Google Calendar:', err)
                 }
             }
