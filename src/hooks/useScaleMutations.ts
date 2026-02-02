@@ -82,32 +82,15 @@ export function useScaleMutations(onSuccess?: () => void) {
                     const calendarId = await getCalendarId(token)
                     const gEvent = formatToGoogleEvent(input)
 
-                    // Para verificar colisão, usamos UTC no listEvents para não quebrar a API
-                    // gEvent.start.dateTime tem "yyyy-MM-ddTHH:mm:ss" sem timezone (mas com campo timeZone separado)
-                    // listEvents precisa de RFC3339 (ex: 2026-02-02T08:00:00Z ou ...-03:00)
-
-                    // Recriamos date objects para conversão
                     const checkStart = parseISO(gEvent.start.dateTime || '')
                     const checkEnd = parseISO(gEvent.end.dateTime || '')
 
-                    // queryTime: enviamos como UTC para garantir compatibilidade
-                    // Obs: Se o input não tem informação de timezone, o parseISO usa local do browser/servidor.
-                    // Isso pode gerar drift se o servidor (Vercel) for UTC e o browser -03:00.
-                    // Mas como o 'gEvent.start.dateTime' foi gerado via 'format' sem timezone, ele é "Floating".
-                    // Google listEvents requer timezone. Vamos assumir que a data é no fuso America/Sao_Paulo (-03:00)
-                    // Simplesmente dar append no offset fixo ou usar toISOString() da data LOCAL.
-
-                    // Estratégia Segura: Anexar Z ou offset ao string se ele não tiver.
-                    // parseISO aceita sem offset. toISOString devolve UTC.
                     const events = await listEvents(token, calendarId, checkStart.toISOString(), checkEnd.toISOString())
 
                     const hasConflict = events.some(e => {
                         const sameTitle = e.summary === gEvent.summary
-
-                        // timestamps
                         const eventStart = new Date(e.start.dateTime || e.start.date || '').getTime()
-                        const inputStart = checkStart.getTime() // Comparando timestamps absolutos
-
+                        const inputStart = checkStart.getTime()
                         const sameTime = Math.abs(eventStart - inputStart) < 60000
 
                         return sameTitle && sameTime
@@ -118,7 +101,6 @@ export function useScaleMutations(onSuccess?: () => void) {
                         return false
                     }
                 } catch (err: any) {
-                    // Erros de API não devem bloquear o uso do app
                     console.warn('Erro na verificação do Google Calendar:', err)
                 }
             }
@@ -135,7 +117,7 @@ export function useScaleMutations(onSuccess?: () => void) {
                 observacoes: input.observacoes,
                 ativa: input.ativa !== undefined ? input.ativa : true,
                 motivo_inatividade: input.motivo_inatividade,
-                sincronizado: false, // Atualizado depois
+                sincronizado: false,
                 calendar_event_id: null as string | null
             }
 
@@ -201,27 +183,24 @@ export function useScaleMutations(onSuccess?: () => void) {
 
             const token = session.provider_token
 
-            // Buscar escala atual para ver se tem ID do Google
+            // Buscar escala atual
             const { data: currentScale, error: fetchError } = await supabase
                 .from('scales')
-                .select('calendar_event_id, data, local, hora_inicio, hora_fim, observacoes, tipo')
+                .select('calendar_event_id, data, local, hora_inicio, hora_fim, observacoes, tipo, ativa, motivo_inatividade')
                 .eq('id', id)
                 .single()
 
             if (fetchError) throw fetchError
 
             // --- Google Calendar Consistency Check ---
-            // Se a escala está sincronizada, EXIGIMOS o token para permitir a edição
-            // Isso evita desincronia (editar no app e não no Google)
             if (currentScale?.calendar_event_id && !token) {
                 toast.error('Erro de Sincronização', {
                     description: 'Para editar uma escala sincronizada, você precisa estar conectado ao Google Calendar. Reconecte-se e tente novamente.'
                 })
                 return false
             }
-            // -----------------------------------------
 
-            // Mapear apenas os campos definidos para update no DB
+            // Mapear apenas os campos definidos
             const dbData: Record<string, unknown> = {}
             if (input.data) dbData.data = input.data
             if (input.tipo) dbData.tipo = input.tipo
@@ -232,149 +211,156 @@ export function useScaleMutations(onSuccess?: () => void) {
             if (input.ativa !== undefined) dbData.ativa = input.ativa
             if (input.motivo_inatividade !== undefined) dbData.motivo_inatividade = input.motivo_inatividade
 
-            // Buscar escala atual para ver se tem ID do Google
-            const { data: currentScale, error: fetchError } = await supabase
-                .from('scales')
-                .select('calendar_event_id, data, local, hora_inicio, hora_fim, observacoes, tipo, ativa, motivo_inatividade')
-                .eq('id', id)
-                .single()
+            // Atualizar Google Calendar se necessário
+            let googleUpdateSuccess = true
+            if (token && currentScale?.calendar_event_id) {
+                try {
+                    const calendarId = await getCalendarId(token)
 
-            const gEvent = formatToGoogleEvent(mergedInput)
-            await updateEvent(token, calendarId, currentScale.calendar_event_id, gEvent)
-        } catch (gError) {
-            console.error('Erro ao atualizar no Google:', gError)
-            // Se falhar no Google, perguntar se quer continuar? 
-            // Por enquanto, abortamos para garantir consistência ou avisamos?
-            // A request pedia para evitar inconsistência. Se falhar no Google, o user deve saber.
-            toast.error('Falha ao atualizar no Google Calendar. A operação foi cancelada para manter a sincronia.')
-            googleUpdateSuccess = false
-            return false
-        }
-    }
+                    const mergedInput: ScaleInput = {
+                        data: input.data || currentScale.data,
+                        tipo: input.tipo || currentScale.tipo,
+                        local: input.local || currentScale.local,
+                        horaInicio: input.horaInicio ?? currentScale.hora_inicio,
+                        horaFim: input.horaFim ?? currentScale.hora_fim,
+                        observacoes: input.observacoes !== undefined ? input.observacoes : currentScale.observacoes,
+                        ativa: input.ativa !== undefined ? input.ativa : currentScale.ativa,
+                        motivo_inatividade: input.motivo_inatividade !== undefined ? input.motivo_inatividade : currentScale.motivo_inatividade
+                    }
 
-    if (!googleUpdateSuccess) return false
-
-    const { error } = await supabase
-        .from('scales')
-        .update(dbData)
-        .eq('id', id)
-
-    if (error) throw error
-
-    if (currentScale?.calendar_event_id) {
-        toast.success('Escala e Google Calendar atualizados!')
-    } else {
-        toast.success('Escala atualizada com sucesso!')
-    }
-
-    onSuccess?.()
-    return true
-} catch (error) {
-    console.error('Erro ao atualizar escala:', error)
-    toast.error('Erro ao atualizar escala')
-    return false
-} finally {
-    setIsSubmitting(false)
-}
-    }
-
-const deleteScale = async (id: string) => {
-    setIsSubmitting(true)
-    try {
-        const supabase = createClient()
-        const { data: { session }, error: authError } = await supabase.auth.getSession()
-        if (authError || !session?.user) throw new Error('Usuário não autenticado')
-
-        const token = session.provider_token
-
-        // Buscar ID do evento ANTES de deletar
-        const { data: scale } = await supabase
-            .from('scales')
-            .select('calendar_event_id')
-            .eq('id', id)
-            .single()
-
-        // --- Google Calendar Consistency Check ---
-        // Se está sincronizada, verificar token ANTES de deletar do banco
-        if (scale?.calendar_event_id) {
-            if (!token) {
-                toast.error('Erro de Autenticação', {
-                    description: 'Para excluir uma escala sincronizada, você precisa estar conectado ao Google Calendar.'
-                })
-                return false
-            }
-
-            // Tentar deletar do Google Calendar PRIMEIRO
-            try {
-                const calendarId = await getCalendarId(token)
-                await deleteEvent(token, calendarId, scale.calendar_event_id)
-            } catch (gError: any) {
-                console.error('Erro ao deletar do Google:', gError)
-                // 410 Gone ou 404 Not Found significa que já não existe, então podemos prosseguir
-                if (gError?.code !== 404 && gError?.code !== 410) {
-                    toast.error('Falha ao remover do Google Calendar. A operação foi cancelada para evitar inconsistência.')
+                    const gEvent = formatToGoogleEvent(mergedInput)
+                    await updateEvent(token, calendarId, currentScale.calendar_event_id, gEvent)
+                } catch (gError) {
+                    console.error('Erro ao atualizar no Google:', gError)
+                    toast.error('Falha ao atualizar no Google Calendar. Operação cancelada para manter sincronia.')
+                    googleUpdateSuccess = false
                     return false
                 }
             }
+
+            if (!googleUpdateSuccess) return false
+
+            const { error } = await supabase
+                .from('scales')
+                .update(dbData)
+                .eq('id', id)
+
+            if (error) throw error
+
+            if (currentScale?.calendar_event_id) {
+                toast.success('Escala e Google Calendar atualizados!')
+            } else {
+                toast.success('Escala atualizada com sucesso!')
+            }
+
+            onSuccess?.()
+            return true
+        } catch (error) {
+            console.error('Erro ao atualizar escala:', error)
+            toast.error('Erro ao atualizar escala')
+            return false
+        } finally {
+            setIsSubmitting(false)
         }
-        // -------------------------------------
+    }
 
-        const { error } = await supabase
-            .from('scales')
-            .delete()
-            .eq('id', id)
+    const deleteScale = async (id: string) => {
+        setIsSubmitting(true)
+        try {
+            const supabase = createClient()
+            const { data: { session }, error: authError } = await supabase.auth.getSession()
+            if (authError || !session?.user) throw new Error('Usuário não autenticado')
 
-        if (error) throw error
+            const token = session.provider_token
 
-        if (scale?.calendar_event_id) {
-            toast.success('Escala removida do Sistema e do Google Calendar.')
-        } else {
-            toast.success('Escala removida com sucesso!')
+            // Buscar ID do evento ANTES de deletar
+            const { data: scale } = await supabase
+                .from('scales')
+                .select('calendar_event_id')
+                .eq('id', id)
+                .single()
+
+            // --- Google Calendar Consistency Check ---
+            // Se está sincronizada, verificar token ANTES de deletar do banco
+            if (scale?.calendar_event_id) {
+                if (!token) {
+                    toast.error('Erro de Autenticação', {
+                        description: 'Para excluir uma escala sincronizada, você precisa estar conectado ao Google Calendar.'
+                    })
+                    return false
+                }
+
+                // Tentar deletar do Google Calendar PRIMEIRO
+                try {
+                    const calendarId = await getCalendarId(token)
+                    await deleteEvent(token, calendarId, scale.calendar_event_id)
+                } catch (gError: any) {
+                    console.error('Erro ao deletar do Google:', gError)
+                    // 410 Gone ou 404 Not Found significa que já não existe, então podemos prosseguir
+                    if (gError?.code !== 404 && gError?.code !== 410) {
+                        toast.error('Falha ao remover do Google Calendar. A operação foi cancelada para evitar inconsistência.')
+                        return false
+                    }
+                }
+            }
+            // -------------------------------------
+
+            const { error } = await supabase
+                .from('scales')
+                .delete()
+                .eq('id', id)
+
+            if (error) throw error
+
+            if (scale?.calendar_event_id) {
+                toast.success('Escala removida do Sistema e do Google Calendar.')
+            } else {
+                toast.success('Escala removida com sucesso!')
+            }
+
+            onSuccess?.()
+            return true
+        } catch (error) {
+            console.error('Erro ao deletar escala:', error)
+            toast.error('Erro ao remover escala')
+            return false
+        } finally {
+            setIsSubmitting(false)
         }
-
-        onSuccess?.()
-        return true
-    } catch (error) {
-        console.error('Erro ao deletar escala:', error)
-        toast.error('Erro ao remover escala')
-        return false
-    } finally {
-        setIsSubmitting(false)
     }
-}
 
-const deleteAllScales = async () => {
-    // Implementação simplificada: Não sincroniza deleção em massa com Google por segurança e cota
-    setIsSubmitting(true)
-    try {
-        const supabase = createClient()
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
-        if (authError || !user) throw new Error('Usuário não autenticado')
+    const deleteAllScales = async () => {
+        // Implementação simplificada: Não sincroniza deleção em massa com Google por segurança e cota
+        setIsSubmitting(true)
+        try {
+            const supabase = createClient()
+            const { data: { user }, error: authError } = await supabase.auth.getUser()
+            if (authError || !user) throw new Error('Usuário não autenticado')
 
-        const { error } = await supabase
-            .from('scales')
-            .delete()
-            .eq('user_id', user.id)
+            const { error } = await supabase
+                .from('scales')
+                .delete()
+                .eq('user_id', user.id)
 
-        if (error) throw error
+            if (error) throw error
 
-        toast.success('Todas as escalas foram removidas! (Google Calendar não afetado)')
-        onSuccess?.()
-        return true
-    } catch (error) {
-        console.error('Erro ao limpar escalas:', error)
-        toast.error('Erro ao limpar escalas')
-        return false
-    } finally {
-        setIsSubmitting(false)
+            toast.success('Todas as escalas foram removidas! (Google Calendar não afetado)')
+            onSuccess?.()
+            return true
+        } catch (error) {
+            console.error('Erro ao limpar escalas:', error)
+            toast.error('Erro ao limpar escalas')
+            return false
+        } finally {
+            setIsSubmitting(false)
+        }
     }
-}
 
-return {
-    createScale,
-    updateScale,
-    deleteScale,
-    deleteAllScales,
-    isSubmitting
-}
+    return {
+        createScale,
+        updateScale,
+        deleteScale,
+        deleteAllScales,
+        isSubmitting
+    }
 }
