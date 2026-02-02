@@ -99,8 +99,9 @@ O projeto está estável, com pipeline de deploy automático corrigido e experi�
 
 ### O que falta / Próximos Passos (Backlog Futuro):
 
-### Fase 10: Integracão Profunda Google Calendar (Em Aberto 📋)
-- [ ] **Sincronização de Exclusão**: Remover evento do Google quando removido no App.
-- [ ] **Sincronização de Edição**: Atualizar evento do Google quando editado no App.
-- [ ] **Prevenção de Duplicatas**: Verificar conflito de horário no Google antes de criar nova escala.
-- [ ] **Gestão de IDs**: Salvar `calendar_event_id` para permitir sincronização bidirecional futura.
+### Fase 10: Integração Profunda Google Calendar (Concluída ✅)
+- [x] **Sincronização de Exclusão**: Remover evento do Google quando removido no App (Checks estritos implementados).
+- [x] **Sincronização de Edição**: Atualizar evento do Google quando editado no App.
+- [x] **Prevenção de Duplicatas**: Verificar conflito de horário no Google antes de criar nova escala.
+- [x] **Gestão de IDs**: Salvar `calendar_event_id` para permitir sincronização bidirecional.
+- [x] **Consistência de Dados**: Bloquear edição/exclusão de escalas sincronizadas se o usuário estiver offline/sem token.
