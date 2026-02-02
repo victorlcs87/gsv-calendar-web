@@ -46,18 +46,18 @@ export async function middleware(request: NextRequest) {
         request.nextUrl.pathname.startsWith('/perfil')
 
     // Redireciona para login se não autenticado
-    if (!user && isDashboardRoute) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/login'
-        return NextResponse.redirect(url)
-    }
+    // if (!user && isDashboardRoute) {
+    //     const url = request.nextUrl.clone()
+    //     url.pathname = '/login'
+    //     return NextResponse.redirect(url)
+    // }
 
     // Redireciona para dashboard se já autenticado
-    if (user && isAuthRoute) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/'
-        return NextResponse.redirect(url)
-    }
+    // if (user && isAuthRoute) {
+    //     const url = request.nextUrl.clone()
+    //     url.pathname = '/'
+    //     return NextResponse.redirect(url)
+    // }
 
     return supabaseResponse
 }

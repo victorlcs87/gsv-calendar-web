@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Plus, Upload, Filter, CalendarDays, Loader2, Download, Clock, DollarSign, BarChart3 } from 'lucide-react'
@@ -22,9 +23,27 @@ import { toast } from 'sonner'
  * Página principal de Escalas
  * Lista escalas com filtros, ações CRUD e importação CSV
  */
+import { useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+
+// ... existing imports
+
 export default function EscalasPage() {
     const { scales, isLoading, refresh } = useScales()
     const { deleteScale } = useScaleMutations(refresh)
+    const router = useRouter() // Ensure imported from 'next/navigation' which is likely there or need adding
+
+    useEffect(() => {
+        const checkUser = async () => {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                router.replace('/login')
+            }
+        }
+        checkUser()
+    }, [router])
+
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
         from: startOfMonth(new Date()),
