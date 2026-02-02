@@ -45,18 +45,18 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                     />
 
                     {/* Conteúdo */}
-                    <div className="flex flex-1 flex-col gap-3 p-4">
+                    <div className="flex flex-1 flex-col gap-2 p-3">
                         {/* Badge de Inatividade */}
                         {!isAtiva && (
-                            <div className="flex items-center gap-2 mb-1 p-2 rounded-md bg-destructive/10 text-destructive text-sm font-medium border border-destructive/20">
+                            <div className="flex items-center gap-2 mb-0.5 p-1.5 rounded-md bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20">
                                 <span className="font-bold">Não Realizado:</span>
                                 <span>{motivo}</span>
                             </div>
                         )}
 
-                        {/* Operação (Topo) - Só mostra se ativa ou se não tiver badge de inatividade para não poluir */}
+                        {/* Operação (Topo) */}
                         {isAtiva && scale.observacoes?.match(/Operação: (.*?)(?:\n|$)/) && (
-                            <div className="flex items-start gap-2 mb-1 text-sm font-medium text-amber-600 bg-amber-50 p-2 rounded-md border border-amber-100 dark:bg-amber-950/30 dark:border-amber-900">
+                            <div className="flex items-start gap-2 mb-0.5 text-xs font-medium text-amber-600 bg-amber-50 p-1.5 rounded-md border border-amber-100 dark:bg-amber-950/30 dark:border-amber-900">
                                 <span className="font-bold shrink-0">Operação:</span>
                                 <span className="break-words">{scale.observacoes.match(/Operação: (.*?)(?:\n|$)/)?.[1]}</span>
                             </div>
@@ -65,46 +65,43 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                         {/* Header: Data e Badge */}
                         <div className="flex items-start justify-between">
                             <div>
-                                <p className="text-lg font-semibold text-foreground">{dataFormatada}</p>
-                                <p className="text-sm capitalize text-muted-foreground">{diaSemana}</p>
+                                <p className="text-base font-semibold text-foreground">{dataFormatada}</p>
+                                <p className="text-xs capitalize text-muted-foreground">{diaSemana}</p>
                             </div>
-                            <Badge variant={!isAtiva ? 'outline' : isOrdinaria ? 'default' : 'secondary'}>
+                            <Badge variant={!isAtiva ? 'outline' : isOrdinaria ? 'default' : 'secondary'} className="h-5 text-xs px-2">
                                 {scale.tipo}
                             </Badge>
                         </div>
 
                         {/* Info Grid */}
-                        {/* Info Grid */}
-                        <div className="flex flex-row justify-between items-center gap-2 text-sm">
-                            <div className="flex items-center gap-2 text-muted-foreground min-w-0">
-                                <MapPin className="h-4 w-4 shrink-0" />
+                        <div className="flex flex-row justify-between items-center gap-2 text-xs">
+                            <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
+                                <MapPin className="h-3.5 w-3.5 shrink-0" />
                                 <span className="truncate">{scale.local}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-muted-foreground shrink-0">
-                                <Clock className="h-4 w-4 shrink-0" />
+                            <div className="flex items-center gap-1.5 text-muted-foreground shrink-0">
+                                <Clock className="h-3.5 w-3.5 shrink-0" />
                                 <span>
                                     {scale.horaInicio}h - {scale.horaFim}h ({scale.horas}h)
                                 </span>
                             </div>
                         </div>
 
-
-
                         {/* Valores */}
-                        <div className="flex items-center justify-between border-t pt-3">
+                        <div className="flex items-center justify-between border-t pt-2 gap-2">
                             <div>
-                                <p className="text-xs text-muted-foreground">Valor Líquido</p>
+                                <p className="text-[10px] text-muted-foreground">Líquido</p>
                                 <p className={cn(
-                                    "text-lg font-bold",
+                                    "text-base font-bold",
                                     !isAtiva ? "text-muted-foreground line-through decoration-destructive/50" : "text-green-600"
                                 )}>
                                     {scale.valorLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                 </p>
                             </div>
                             <div className="text-right">
-                                <p className="text-xs text-muted-foreground">Bruto</p>
+                                <p className="text-[10px] text-muted-foreground">Bruto</p>
                                 <p className={cn(
-                                    "text-sm text-muted-foreground",
+                                    "text-xs text-muted-foreground",
                                     !isAtiva && "line-through"
                                 )}>
                                     {scale.valorBruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -114,25 +111,22 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
 
                         {/* Status de Sincronização */}
                         {scale.sincronizado && (
-                            <div className="flex items-center gap-1 text-xs text-green-600">
+                            <div className="flex items-center gap-1 text-[10px] text-green-600 -mt-1">
                                 <Calendar className="h-3 w-3" />
-                                <span>Sincronizado com Google Calendar</span>
-                                {scale.calendar_event_id && (
-                                    <ExternalLink className="h-3 w-3" />
-                                )}
+                                <span>Sincronizado</span>
                             </div>
                         )}
 
                         {/* Ações */}
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 mt-1">
                             {onEdit && (
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="flex-1"
+                                    className="flex-1 h-8 text-xs"
                                     onClick={() => onEdit(scale)}
                                 >
-                                    <Pencil className="mr-2 h-4 w-4" />
+                                    <Pencil className="mr-2 h-3 w-3" />
                                     Editar
                                 </Button>
                             )}
@@ -140,10 +134,10 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                    className="h-8 w-8 px-0 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                                     onClick={() => onDelete(scale)}
                                 >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-3 w-3" />
                                 </Button>
                             )}
                         </div>

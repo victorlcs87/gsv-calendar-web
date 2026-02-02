@@ -1,107 +1,47 @@
-# Status da Migração GSV Calendar Web
+# Migration Status - GSV Calendar Web
 
-Este documento rastreia o progresso da migração do App Expo para Web (Next.js).
-O objetivo é garantir paridade de recursos com o projeto mobile original (`gsv-calendar-gemini`) mantendo as melhores práticas de desenvolvimento web.
+## 🚀 Overview
+Migração do app React Native (Expo) para Next.js 15 Web App (PWA).
 
-## 📅 Fases da Migração
+## ✅ Completed Features
+- [x] **Project Setup**: Next.js 15, TypeScript, TailwindCSS, Shadcn/UI, Supabase.
+- [x] **Authentication**: Supabase Auth (Email/Password) + Google OAuth (Calendar scope).
+- [x] **Database**: Supabase PostgreSQL schemas (profiles, scales).
+- [x] **Scales CRUD**:
+    - [x] Create, Read, Update, Delete scales.
+    - [x] Infinite scroll / Load more logic (or full fetch for MVP).
+    - [x] Filters (Date range, Scale type).
+    - [x] **Disable/Cancel Scale**: Logic to mark scale as inactive/canceled with reason.
+- [x] **Google Calendar Sync**:
+    - [x] 1-way sync (App -> Google Calendar).
+    - [x] Connect/Disconnect Google Account.
+    - [x] Real-time updates to Google Events when editing in App.
+    - [x] "Sync Button" to push local scales to Google.
+    - [x] Prevent duplicates logic.
+- [x] **CSV Operations**:
+    - [x] Import CSV (Parse & Insert).
+    - [x] Export CSV (Generate & Download).
+- [x] **Reports/Dashboard**:
+    - [x] Monthly totals (Hours, Values).
+    - [x] Charts (Earnings, Operation Ranking, Location Ranking).
+    - [x] Previous period comparison.
+    - [x] **Active vs Inactive breakdown**.
+- [x] **PWA Features**:
+    - [x] Manifest file.
+    - [x] Service Worker (next-pwa).
+    - [x] Install prompt & Update notification.
+    - [x] Mobile-first UI optimizations (Compact cards, Touch targets).
 
-### Fase 1: Setup do Projeto (Concluída ✅)
-- [x] Criar projeto Next.js 15
-- [x] Configurar TailwindCSS 4 (Instalado: `tailwindcss ^4`)
-- [x] Instalar shadcn/ui (Componentes base instalados)
-- [x] Configurar ESLint + Prettier
-- [x] Criar estrutura de pastas + tipos + validators
-- [x] **Segurança**: Configurar variáveis de ambiente seguras
+## 🚧 Pending / Improvements
+- [ ] **Offline Mode**: Better offline support with caching (Supabase doesn't support offline mutations out-of-box easily on web, requires distinct strategy like rxdb or local storage sync).
+- [ ] **Tests**: Add integration tests (Playwright/Cypress).
+- [ ] **Accessibility**: Audit ARIA labels and keyboard navigation.
+- [ ] **Performance**: Analyze bundle size and optimize images/icons.
 
-### Fase 2: Supabase + Auth (Concluída ✅)
-- [x] Criar projeto Supabase
-- [x] Configurar Supabase Auth (Email/Password)
-- [x] **Segurança**: Middleware para proteção de rotas (Redirecionamento server-side)
-- [x] Implementar páginas Login/Register (Com validação e feedback visual)
+## 📝 Notes
+- **Supabase**: Ensure RLS policies are active and secure.
+- **Google API**: Production deployment requires verifying the Google Cloud Console consent screen if scope is sensitive.
+- **Vercel**: Deployment pipeline is active on `main` branch.
 
-### Fase 3: Database (Concluída ✅)
-- [x] Criar tabela scales no Supabase
-- [x] **Segurança**: Configurar Row Level Security (RLS) - Dados isolados por usuário
-- [x] Criar hooks de CRUD (`useScaleMutations`) com tratamento de erro sanitizado
-- [x] **Clean Code**: Separação de responsabilidades (Hooks vs UI)
-
-### Fase 4: UI Principal (Concluída ✅)
-- [x] Layout Responsivo (Sidebar/Header adaptáveis)
-- [x] Página de Escalas (Listagem com Cards detalhados)
-- [x] Página de Relatórios (Gráficos e Totais calculados em tempo real)
-- [x] Página de Perfil (Visualização segura de dados)
-- [x] Componentes Core (ScaleCard, Modal, etc) com acessibilidade (Radix UI)
-- [x] Dark mode (`ThemeToggle`)
-
-### Fase 5: Features de Dados (Em Progresso 🚧)
-- [x] Importação CSV (Com parser local de data `parseLocalDate`)
-### Fase 5: Features de Dados (Concluída ✅)
-- [x] Importação CSV (Com parser local de data `parseLocalDate`)
-    - *Suporte*: Formato manual e nativo do Sigmanet (`datIniVagas`, `nomTurno`).
-- [x] Filtros básicos (por mês na listagem)
-- [x] **Bugfix**: Correção de datas e Fuso Horário (Local Time vs UTC)
-- [x] **UX**: Presets de horário (24h/12h) no formulário
-- [x] **Exportação CSV** (Concluída ✅)
-    - *Features*: Download via Blob, formato compatível (Subject/Location/etc), Codificação UTF-8 com BOM.
-- [x] **Filtros Avançados**: Filtragem combinada por Tipo (Ordinária/Extra) e Local.
-- [x] **Deduplicação Inteligente**: Ignora escalas duplicadas na importação.
-    - *Correção*: Sincronização de estado consertada para permitir reimportação após exclusão.
-- [x] **Refinamentos de Operação (Pós-MVP)**:
-    - [x] **Campo "Operação"**: Input dedicado no formulário (Label + Parser Automático).
-    - [x] **Display**: Badge de Operação destacado no Card da Escala.
-    - [x] **Lógica de Pernoite**: Formulário aceita hora fim < inicio como "virada de dia".
-    - [x] **Analytics**: Novo gráfico "Ranking por Operação" substituindo o ranking genérico por Tipo.
-
-### Fase 6: Integração de Calendário (Concluída ✅)
-- [x] **Configuração GCP**: Credenciais OAuth criadas e configuradas.
-- [x] **Autenticação**: Login com Google via Supabase Auth funcional.
-- [x] **UI**: Botão de Sincronização implementado.
-- [x] **Sincronização**:
-    - [x] Permitir nome personalizado para o calendário (Padrão: "GSV Calendar").
-    - [x] Lógica para criar eventos no Google Calendar.
-    - [x] Atualizar status de sincronização no banco de dados.
-
-
-### Fase 7: Deploy e CI/CD (Concluída ✅)
-- [x] Configuração de Headers de Segurança (Next.config)
-- [x] Variáveis de Ambiente de Produção (Exemplo criado)
-- [x] Pipeline de verificação (Lint/Build no GitHub Actions)
-- [x] Deploy na Vercel (Produção)
-- [x] Correção de Redirects (Supabase/Google Auth)
-
-### Fase 8: Polimento UI/UX e Mobile (Concluída ✅)
-- [x] **UI**: Refinamento visual (Gradientes, Cards Unificados, Paleta de Cores).
-- [x] **Mobile**: Adaptação para PWA iOS (Standalone Mode, Scope fixo e Viewport travada + Client-side Routing Check).
-- [x] **UX**: Ajustes de layout (Quebra de linha em botões, Posicionamento de Toggle de Tema).
-- [x] **Auditoria**: Código e Segurança validados.
-
-## 📱 Comparativo Mobile vs Web
-
-| Feature | Mobile (Expo) | Web (Next.js) | Status Web |
-|---------|---------------|---------------|------------|
-| **Auth** | Supabase/Context | Supabase/Middleware | ✅ Igual |
-| **Banco** | Supabase | Supabase + RLS | ✅ Melhor (RLS) |
-| **Import** | CSV (Expo FS) | CSV (DOM File API) | ✅ Igual |
-| **Export** | CSV (Sharing) | CSV (Blob Download) | ✅ Concluído |
-| **Calendar** | Nativo (iOS/Android) | OAuth/API (Google) | ✅ Concluído |
-| **Relatórios** | Cards + Charts | Cards + Charts Interativos | ✅ Melhor |
-| **Filtros** | Custom Hooks | Server/Client State | ✅ Concluído |
-
-
-### Fase 9: Otimização PWA e iOS (Concluída ✅)
-- [x] **Ícone iOS**: Configuração de `apple-touch-icon` com "cache busting" (`?v=5`) e fundo opaco "full-bleed" para preenchimento correto.
-- [x] **Status Bar**: Configuração de `black-translucent` para imersão em dark mode.
-- [x] **Deploy CI/CD**: Correções no pipeline do GitHub Actions (Linting rigoroso e Env Vars de fallback).
-- [x] **Assets**: Organização correta de assets estáticos na pasta `public/`.
-
-## 🚀 Status Atual: PRONTO PARA USO (v1.1)
-O projeto está estável, com pipeline de deploy automático corrigido e experiência PWA otimizada para iOS.
-
-### O que falta / Próximos Passos (Backlog Futuro):
-
-### Fase 10: Integração Profunda Google Calendar (Concluída ✅)
-- [x] **Sincronização de Exclusão**: Remover evento do Google quando removido no App (Checks estritos implementados).
-- [x] **Sincronização de Edição**: Atualizar evento do Google quando editado no App.
-- [x] **Prevenção de Duplicatas**: Verificar conflito de horário no Google antes de criar nova escala.
-- [x] **Gestão de IDs**: Salvar `calendar_event_id` para permitir sincronização bidirecional.
-- [x] **Consistência de Dados**: Bloquear edição/exclusão de escalas sincronizadas se o usuário estiver offline/sem token.
+---
+*Last Updated: 2026-02-02*

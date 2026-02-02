@@ -34,27 +34,34 @@ export default function RelatoriosPage() {
 
         return scales.filter((scale) => {
             if (!scale.data) return false
-            // Ignorar escalas inativas
-            if (scale.ativa === false) return false
-
             try {
                 return isWithinInterval(parseISO(scale.data), interval)
             } catch { return false }
         })
     }, [dateRange, scales])
 
+    const activePeriodScales = useMemo(() => {
+        return periodScales.filter(s => s.ativa !== false)
+    }, [periodScales])
+
     // Calcular relatório do período selecionado
-    const currentReport = useMemo((): MonthlyReport => {
+    const currentReport = useMemo(() => {
+        const total = periodScales.length
+        const totalInativas = periodScales.filter(s => s.ativa === false).length
+        const totalAtivas = activePeriodScales.length
+
         return {
             mes: 'Período Atual',
-            totalEscalas: periodScales.length,
-            totalHoras: periodScales.reduce((acc, s) => acc + s.horas, 0),
-            valorBrutoTotal: periodScales.reduce((acc, s) => acc + s.valorBruto, 0),
-            valorLiquidoTotal: periodScales.reduce((acc, s) => acc + s.valorLiquido, 0),
-            escalasOrdinarias: periodScales.filter((s) => s.tipo === 'Ordinária').length,
-            escalasExtras: periodScales.filter((s) => s.tipo === 'Extra').length,
+            totalEscalas: total,
+            totalAtivas,
+            totalInativas,
+            totalHoras: activePeriodScales.reduce((acc, s) => acc + s.horas, 0),
+            valorBrutoTotal: activePeriodScales.reduce((acc, s) => acc + s.valorBruto, 0),
+            valorLiquidoTotal: activePeriodScales.reduce((acc, s) => acc + s.valorLiquido, 0),
+            escalasOrdinarias: activePeriodScales.filter((s) => s.tipo === 'Ordinária').length,
+            escalasExtras: activePeriodScales.filter((s) => s.tipo === 'Extra').length,
         }
-    }, [periodScales])
+    }, [periodScales, activePeriodScales])
 
     // Calcular relatório do período anterior para comparação
     const previousReport = useMemo((): MonthlyReport => {
@@ -134,7 +141,7 @@ export default function RelatoriosPage() {
                     <CardContent>
                         <div className="text-3xl font-bold">{currentReport.totalEscalas}</div>
                         <p className="text-xs text-muted-foreground">
-                            {currentReport.escalasOrdinarias} ordinárias, {currentReport.escalasExtras} extras
+                            {currentReport.totalAtivas} realizadas, {currentReport.totalInativas} canceladas
                         </p>
                     </CardContent>
                 </Card>
@@ -191,9 +198,9 @@ export default function RelatoriosPage() {
 
             {/* Gráficos */}
             <div className="grid gap-4 lg:grid-cols-2">
-                <OperationRanking scales={periodScales} />
-                <LocationRanking scales={periodScales} />
-                <EarningsChart scales={periodScales} />
+                <OperationRanking scales={activePeriodScales} />
+                <LocationRanking scales={activePeriodScales} />
+                <EarningsChart scales={activePeriodScales} />
             </div>
         </div>
     )

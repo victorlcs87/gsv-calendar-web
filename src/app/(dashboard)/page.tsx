@@ -112,11 +112,13 @@ export default function EscalasPage() {
     const totals = useMemo(() => {
         return filteredScales.reduce(
             (acc, scale) => {
-                // Se a escala estiver inativa (ativa === false), não soma nos valores/horas
-                if (scale.ativa === false) {
+                const isAtiva = scale.ativa !== false
+
+                if (!isAtiva) {
                     return {
                         ...acc,
-                        totalEscalas: acc.totalEscalas + 1 // Contamos como escala existente, mas sem valor
+                        totalEscalas: acc.totalEscalas + 1,
+                        totalInativas: acc.totalInativas + 1
                     }
                 }
 
@@ -125,9 +127,11 @@ export default function EscalasPage() {
                     totalBruto: acc.totalBruto + scale.valorBruto,
                     totalLiquido: acc.totalLiquido + scale.valorLiquido,
                     totalEscalas: acc.totalEscalas + 1,
+                    totalAtivas: acc.totalAtivas + 1,
+                    totalInativas: acc.totalInativas
                 }
             },
-            { totalHoras: 0, totalBruto: 0, totalLiquido: 0, totalEscalas: 0 }
+            { totalHoras: 0, totalBruto: 0, totalLiquido: 0, totalEscalas: 0, totalAtivas: 0, totalInativas: 0 }
         )
     }, [filteredScales])
 
@@ -208,7 +212,7 @@ export default function EscalasPage() {
                     <CardContent>
                         <div className="text-2xl font-bold">{totals.totalEscalas}</div>
                         <p className="text-xs text-muted-foreground">
-                            No período selecionado
+                            {totals.totalAtivas} ativas, {totals.totalInativas} inativas
                         </p>
                     </CardContent>
                 </Card>
