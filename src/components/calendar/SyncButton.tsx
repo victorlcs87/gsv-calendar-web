@@ -94,71 +94,145 @@ export function SyncButton({ scales }: SyncButtonProps) {
             const token = session.provider_token
             let targetCalendarId = ''
 
-            // 1. Buscar calendários
-            const calendars = await listCalendars(token)
-            const existingCalendar = calendars.find(c => c.summary === calendarName)
+            // 1. Buscar/Criar calendário
+            try {
+                const calendars = await listCalendars(token)
+                const existingCalendar = calendars.find(c => c.summary === calendarName)
 
-            if (existingCalendar) {
-                targetCalendarId = existingCalendar.id
-            } else {
-                // 2. Criar se não existir
-                const newCalendar = await createCalendar(token, calendarName)
-                targetCalendarId = newCalendar.id
-                toast.success(`Calendário "${calendarName}" criado!`)
+                if (existingCalendar) {
+                    targetCalendarId = existingCalendar.id
+                } else {
+                    const newCalendar = await createCalendar(token, calendarName)
+                    targetCalendarId = newCalendar.id
+                    toast.success(`Calendário "${calendarName}" criado!`)
+                }
+            } catch (error) {
+                console.error('Erro ao acessar calendários:', error)
+                toast.error('Falha ao acessar calendários do Google')
+                return
             }
 
-            // 3. Sincronizar escalas (Filtrando apenas futuras ou não sincronizadas)
-            // Para este teste, vamos pegar as próximas 5 escalas para não estourar cota ou demorar
-            const scalesToSync = scales.slice(0, 5) // TODO: Melhorar filtro
+            // 2. Filtrar escalas não sincronizadas
+            // Verificamos apenas as que NÃO têm calendar_event_id ou flag de sincronizado
+            const scalesToSync = scales.filter(s => !s.calendar_event_id)
+
+            if (scalesToSync.length === 0) {
+                toast.info('Todas as escalas já parecem estar sincronizadas.')
+                setDialogOpen(false)
+                return
+            }
 
             let syncedCount = 0
 
-            for (const scale of scalesToSync) {
-                // Formato de data para Google Event (ISO com Timezone ou Date puro)
-                // Assumindo scale.data YYYY-MM-DD
+            // Limitando lote para evitar rate limit
+            const batch = scalesToSync.slice(0, 10)
+
+            for (const scale of batch) {
+                // Formato de data para Google Event
                 const startIso = parseISO(`${scale.data}T${scale.horaInicio.toString().padStart(2, '0')}:00:00`)
                 let endIso = parseISO(`${scale.data}T${scale.horaFim.toString().padStart(2, '0')}:00:00`)
 
-                // Se hora fim <= hora inicio (ex: 8h as 8h = 24h, ou 20h as 8h), adicionar 1 dia
                 if (scale.horaFim <= scale.horaInicio) {
                     endIso = addDays(endIso, 1)
                 }
 
-                // Extrair Operação para o título (Subject)
                 const operacaoMatch = scale.observacoes?.match(/Operação: (.*?)(?:\n|$)/)
                 const operacao = operacaoMatch ? operacaoMatch[1] : ''
                 const summary = operacao ? `GSV - ${operacao}` : `GSV - ${scale.local}`
 
-                // Montar descrição com valores
                 const valorBruto = scale.valorBruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                 const valorLiquido = scale.valorLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
-                const descriptionLines = [
+                const description = [
                     `Valor Bruto: ${valorBruto}`,
                     `Valor Líquido: ${valorLiquido}`,
                     '',
                     scale.observacoes || ''
-                ]
-                const description = descriptionLines.join('\n').trim()
+                ].join('\n').trim()
 
-                await insertEvent(token, targetCalendarId, {
+                const gEvent = {
                     summary: summary,
                     description: description,
                     start: { dateTime: format(startIso, "yyyy-MM-dd'T'HH:mm:ss"), timeZone: 'America/Sao_Paulo' },
                     end: { dateTime: format(endIso, "yyyy-MM-dd'T'HH:mm:ss"), timeZone: 'America/Sao_Paulo' },
                     location: scale.local
-                })
-                syncedCount++
+                }
+
+                // Chamar listEvents que foi importado mas não estava sendo usado antes
+                // Precisa importar listEvents no topo se não estiver
+                // Assumindo que listEvents existe em @/lib/googleCalendar
+                // para duplicar a lógica de prevenção do hook:
+                try {
+                    const { listEvents } = await import('@/lib/googleCalendar')
+                    const events = await listEvents(token, targetCalendarId, gEvent.start.dateTime, gEvent.end.dateTime)
+
+                    const hasConflict = events.some(e => {
+                        const sameTitle = e.summary === gEvent.summary
+                        // gEvent.start.dateTime tem formato YYYY-MM-DDTHH:mm:ss
+                        const eventStart = new Date(e.start.dateTime || e.start.date || '').getTime()
+                        const inputStart = new Date(gEvent.start.dateTime).getTime()
+                        const sameTime = Math.abs(eventStart - inputStart) < 60000
+                        return sameTitle && sameTime
+                    })
+
+                    if (hasConflict) {
+                        // Se já existe, apenas marcamos como sincronizado no banco para evitar tentar de novo
+                        // Mas precisamos achar o ID do evento existente para salvar
+                        const existingEvent = events.find(e => {
+                            const sameTitle = e.summary === gEvent.summary
+                            const eventStart = new Date(e.start.dateTime || e.start.date || '').getTime()
+                            const inputStart = new Date(gEvent.start.dateTime).getTime()
+                            return sameTitle && Math.abs(eventStart - inputStart) < 60000
+                        })
+
+                        if (existingEvent && existingEvent.id) { // Verificando id explicitamente
+                            await supabase
+                                .from('scales')
+                                .update({
+                                    sincronizado: true,
+                                    sync_status: 'synced',
+                                    calendar_event_id: existingEvent.id // Salvando ID existente
+                                })
+                                .eq('id', scale.id)
+                        }
+                        continue // Pula para o próximo sem criar duplicata
+                    }
+
+                    // Se não existe conflito, cria novo
+                    const createdEvent = await insertEvent(token, targetCalendarId, gEvent)
+
+                    if (createdEvent.id) {
+                        await supabase
+                            .from('scales')
+                            .update({
+                                sincronizado: true,
+                                sync_status: 'synced',
+                                calendar_event_id: createdEvent.id
+                            })
+                            .eq('id', scale.id)
+                        syncedCount++
+                    }
+
+                } catch (err) {
+                    console.error(`Falha ao sincronizar escala ${scale.id}:`, err)
+                }
             }
 
-            toast.success(`Sincronização concluída!`, {
-                description: `${syncedCount} escalas enviadas para "${calendarName}".`
-            })
+            if (syncedCount > 0) {
+                toast.success(`Sincronização concluída!`, {
+                    description: `${syncedCount} novas escalas sincronizadas.`
+                })
+            } else {
+                toast.info('Sincronização atualizada.', {
+                    description: 'Escalas existentes foram vinculadas.'
+                })
+            }
+
             setDialogOpen(false)
 
         } catch (error) {
             console.error('Erro na sincronização:', error)
-            toast.error('Falha ao sincronizar. Verifique o console.')
+            toast.error('Falha ao sincronizar. Tente novamente.')
         } finally {
             setIsLoading(false)
         }

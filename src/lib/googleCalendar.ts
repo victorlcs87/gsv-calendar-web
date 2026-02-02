@@ -7,6 +7,7 @@ interface GoogleCalendar {
 }
 
 interface GoogleCalendarEvent {
+    id?: string
     summary: string
     description?: string
     start: {
