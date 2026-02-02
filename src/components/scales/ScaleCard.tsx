@@ -104,7 +104,7 @@ export function ScaleCard({ scale, onEdit, onDelete }: ScaleCardProps) {
                         )}
 
                         {/* Ações */}
-                        <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                        <div className="flex gap-2">
                             {onEdit && (
                                 <Button
                                     variant="outline"
