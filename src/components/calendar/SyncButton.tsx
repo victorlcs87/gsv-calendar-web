@@ -43,18 +43,13 @@ export function SyncButton({ scales }: SyncButtonProps) {
     const checkConnection = async () => {
         const { data: { session } } = await supabase.auth.getSession()
 
-        // Verifica se há token de provedor (Login OAuth recente)
+        // STRICT CHECK: Only consider connected if we have the actual Token needed for the API
+        // Being "logged in" isn't enough if the OAuth token is missing or expired.
+        // We need the provider_token to make calls to Google Calendar.
         if (session?.provider_token) {
             setIsConnected(true)
-            return
-        }
-
-        // Verifica metadados ou identidades vinculadas
-        const isGoogle = session?.user?.app_metadata?.provider === 'google' ||
-            session?.user?.identities?.some((id) => id.provider === 'google')
-
-        if (isGoogle) {
-            setIsConnected(true)
+        } else {
+            setIsConnected(false)
         }
     }
 
