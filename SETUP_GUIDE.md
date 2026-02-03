@@ -16,6 +16,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 *(Se você perder essas chaves, poderá encontrá-las novamente apenas logando no painel do Supabase.com > Project Settings > API).*
 
+> **Nota sobre Google Cloud:**
+> As credenciais do Google (Client ID e Secret) ficam configuradas **dentro do painel do Supabase** (Authentication > Providers > Google).
+> O código do site não precisa delas no `.env.local` para rodar, pois o Supabase gerencia o login.
+> 
+> **Recomendação:** Mesmo assim, **faça um backup** desses dados do Google Cloud Console em suas notas seguras, caso precise reconfigurar o projeto do zero no futuro.
+
 ---
 
 ## 🛠️ Passo a Passo na Nova Máquina
