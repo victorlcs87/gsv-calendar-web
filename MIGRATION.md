@@ -35,8 +35,8 @@ Migração do app React Native (Expo) para Next.js 15 Web App (PWA).
 ## 🚧 Pending / Improvements
 - [x] **Offline Mode**: Supported via localStorage caching + PWA Service Worker.
 - [x] **Tests**: Basic E2E auth tests with Playwright.
-- [ ] **Accessibility**: Audit ARIA labels and keyboard navigation.
-- [ ] **Performance**: Analyze bundle size and optimize images/icons.
+- [x] **Accessibility**: Audit ARIA labels and keyboard navigation.
+- [x] **Performance**: Analyze bundle size and optimize images/icons.
 
 ## 📝 Notes
 - **Supabase**: Ensure RLS policies are active and secure.
