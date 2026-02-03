@@ -6,17 +6,25 @@ Este projeto visa oferecer uma experiência desktop e mobile responsiva para ges
 
 ## 🚀 Funcionalidades
 
-- **Autenticação Segura**: Login e Cadastro via Email/Senha (Supabase Auth).
+- **Autenticação Segura**: Login e Cadastro via Email/Senha (Supabase Auth) + **Google OAuth**.
 - **Gestão de Escalas**:
   - ✨ **Dashboard**: Visão geral com totais e lista filtrável.
   - 📝 **CRUD Completo**: Adicionar, editar e excluir serviços.
+  - 🛑 **Cancelamento/Inatividade**: Marcar escala como não realizada com justificativa.
   - 📥 **Importação CSV**: Leitura automática de arquivos do Sigmanet.
   - 📤 **Exportação CSV**: Download compatível com Outlook/Google Calendar.
+- **Integração Google Calendar**:
+  - 🔄 **Sincronização**: Envia escalas para o Google Agenda com um clique.
+  - 🛡️ **Inteligente**: Previne duplicatas checando data/hora/título.
+  - ~~Riscado~~: Escalas canceladas aparecem riscadas na agenda.
+- **PWA & Offline**:
+  - 📲 **Instalável**: Adicione à tela inicial do celular.
+  - 📶 **Modo Offline**: Consulte suas escalas mesmo sem internet (cache local).
 - **Financeiro**: Cálculo automático de valores Bruto e Líquido.
+- **Relatórios**: Gráficos de ganhos, ranking de locais e breakdown (Ativo/Inativo).
 - **Interface Moderna**:
   - 🌓 Dark Mode nativo.
-  - 📱 Layout 100% responsivo.
-  - ⚡ Atalhos rápidos para preenchimento de horas (24h/12h).
+  - 📱 Layout 100% responsivo e Mobile-First.
 
 ## 🛠️ Stack Tecnológica
 
@@ -24,6 +32,8 @@ Este projeto visa oferecer uma experiência desktop e mobile responsiva para ges
 - **Linguagem**: TypeScript
 - **Estilização**: TailwindCSS v4 + [shadcn/ui](https://ui.shadcn.com/)
 - **Backend/Banco**: Supabase (PostgreSQL + RLS)
+- **PWA**: @ducanh2912/next-pwa (Service Workers)
+- **Testes**: Playwright (E2E)
 - **Ícones**: Lucide React
 - **Datas**: date-fns (com parser local para evitar issues de timezone)
 
@@ -72,7 +82,9 @@ Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
 ## 📚 Documentação do Projeto
 
-- [MIGRATION.md](./MIGRATION.md): Status da migração do app Mobile para Web.
+- [WALKTHROUGH.md](./WALKTHROUGH.md): Visão geral da Versão 1.0.0 e funcionalidades.
+- [MIGRATION.md](./MIGRATION.md): Histórico da migração Mobile -> Web.
+- [GCP_SETUP.md](./GCP_SETUP.md): Guia para configuração do Google Cloud OAuth em Produção.
 
 
 ## 🤝 Contribuição
