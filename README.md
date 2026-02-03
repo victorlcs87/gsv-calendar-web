@@ -82,6 +82,7 @@ Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
 ## 📚 Documentação do Projeto
 
+- [SETUP_GUIDE.md](./SETUP_GUIDE.md): Passo a passo para restaurar o ambiente em uma nova máquina.
 - [WALKTHROUGH.md](./WALKTHROUGH.md): Visão geral da Versão 1.0.0 e funcionalidades.
 - [MIGRATION.md](./MIGRATION.md): Histórico da migração Mobile -> Web.
 - [GCP_SETUP.md](./GCP_SETUP.md): Guia para configuração do Google Cloud OAuth em Produção.
