@@ -46,7 +46,7 @@ export default function EscalasPage() {
 
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
-        from: startOfMonth(new Date()),
+        from: new Date(),
         to: endOfMonth(new Date())
     })
 
