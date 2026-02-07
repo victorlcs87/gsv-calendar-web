@@ -10,8 +10,24 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
+      - name: Verificar secrets
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+            echo "❌ ERRO: Secret SUPABASE_URL não configurado!"
+            echo "Vá em Settings > Secrets and variables > Actions e adicione:"
+            echo "  - SUPABASE_URL (ex: https://xxx.supabase.co)"
+            echo "  - SUPABASE_ANON_KEY (sua anon key)"
+            exit 1
+          fi
+
       - name: Ping Supabase
         run: |
-          curl -s "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/" \
-            -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}"
-          echo "✅ Ping realizado com sucesso!"
+          response=$(curl -s -w "%{http_code}" "${{ secrets.SUPABASE_URL }}/rest/v1/" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")
+          http_code="${response: -3}"
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "✅ Ping realizado com sucesso! (HTTP $http_code)"
+          else
+            echo "⚠️ Resposta inesperada: HTTP $http_code"
+            exit 1
+          fi
